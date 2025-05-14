@@ -1,0 +1,13 @@
+# R specific
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# Mac specific
+.DS_Store
+
+# Package specific
+*.tar.gz
+*.Rcheck/
