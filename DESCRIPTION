@@ -17,4 +17,5 @@ Imports:
     adRutils (>= 0.1.1),
     stats,
     stringr,
-    tidyr
+    tidyr,
+    rlang

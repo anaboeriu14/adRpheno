@@ -7,6 +7,7 @@
 #' @importFrom stringr str_extract str_remove str_replace str_split
 #' @importFrom tidyr pivot_longer pivot_wider replace_na
 #' @importFrom stats IQR as.formula model.matrix quantile
+#' @importFrom rlang .data :=
 #'
 #' @keywords internal
 NULL
