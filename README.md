@@ -1,7 +1,3 @@
----
-editor_options: 
-  markdown: 
----
 
 # adRpheno
 
