@@ -18,7 +18,7 @@
 #'  To create standardized demographic groupings, consider using the `create_flexible_groups()`
 #'  function from the adRutils package first.
 #'
-#' @seealso \code{\link[adRutils]{create_flexible_groups}}
+#' @seealso \code{\link[adRutils]{bin_and_categorize_variables}}
 #'
 #' @examples
 #' \dontrun{

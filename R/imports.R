@@ -8,6 +8,8 @@
 #' @importFrom tidyr pivot_longer pivot_wider replace_na
 #' @importFrom stats IQR as.formula model.matrix quantile
 #' @importFrom rlang .data :=
+#' @importFrom utils txtProgressBar setTxtProgressBar
+#' @import rxnorm
 #'
 #' @keywords internal
 NULL

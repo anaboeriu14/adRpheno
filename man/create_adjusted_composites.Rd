@@ -59,5 +59,5 @@ result <- create_adjusted_composites(
 }
 }
 \seealso{
-\code{\link[adRutils]{create_flexible_groups}}
+\code{\link[adRutils]{bin_and_categorize_variables}}
 }
