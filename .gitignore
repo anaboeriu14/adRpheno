@@ -53,3 +53,8 @@ rsconnect/
 #DS store
 .DS_Store
 workflow/.DS_Store
+
+# RStudio Connect folder
+rsconnect/
+.Rbuildignore
+*.Rproj
