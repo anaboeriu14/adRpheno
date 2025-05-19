@@ -99,7 +99,7 @@ replace_outliers_with_na <- function(dataf, var_names, multiplier = 1.5,
 
   # Check if these columns have already been processed
   if (!force) {
-    adRutils:::is_processed("replace_outliers_with_na", var_names, error_if_exists = TRUE)
+    adRutils::is_processed("replace_outliers_with_na", var_names, error_if_exists = TRUE)
   }
 
   # Create a copy of the data frame to modify
@@ -156,7 +156,7 @@ replace_outliers_with_na <- function(dataf, var_names, multiplier = 1.5,
   }
 
   # Register these variables as processed
-  adRutils:::register_processed("replace_outliers_with_na", var_names)
+  adRutils::register_processed("replace_outliers_with_na", var_names)
 
   return(result_df)
 }

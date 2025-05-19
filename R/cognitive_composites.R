@@ -58,7 +58,7 @@ create_demographic_adjusted_composites <- function(dataf, test_groups, grouping_
 
   # Check if these columns have already been processed
   if (!force) {
-    adRutils:::is_processed("create_demographic_adjusted_composites", all_tests, error_if_exists = TRUE)
+    adRutils::is_processed("create_demographic_adjusted_composites", all_tests, error_if_exists = TRUE)
   }
 
   # Apply filters if provided
@@ -114,7 +114,7 @@ create_demographic_adjusted_composites <- function(dataf, test_groups, grouping_
     dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~round(., digits = digits)))
 
   # Register these columns as processed
-  adRutils:::register_processed("create_demographic_adjusted_composites", all_tests)
+  adRutils::register_processed("create_demographic_adjusted_composites", all_tests)
 
   return(result_df)
 }
@@ -183,7 +183,7 @@ sum_cognitive_test_components <- function(dataf, component_cols, result_col = "t
 
   # Check if these columns have already been processed
   if (!force) {
-    adRutils:::is_processed("sum_cognitive_test_components",
+    adRutils::is_processed("sum_cognitive_test_components",
                             c(component_cols, result_col),
                             error_if_exists = TRUE)
   }
@@ -210,7 +210,7 @@ sum_cognitive_test_components <- function(dataf, component_cols, result_col = "t
   }
 
   # Register these columns as processed
-  adRutils:::register_processed("sum_cognitive_test_components",
+  adRutils::register_processed("sum_cognitive_test_components",
                                 c(component_cols, result_col))
 
   return(result)

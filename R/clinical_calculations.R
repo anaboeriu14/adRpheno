@@ -44,7 +44,7 @@ calculate_bmi_obesity <- function(dataf, weight_col, height_col, bmi_col,
 
   # Check if these columns have already been processed
   if (!force) {
-    adRutils:::is_processed("calculate_bmi_obesity", c(weight_col, height_col, bmi_col),
+    adRutils::is_processed("calculate_bmi_obesity", c(weight_col, height_col, bmi_col),
                             error_if_exists = TRUE)
   }
 
@@ -64,7 +64,7 @@ calculate_bmi_obesity <- function(dataf, weight_col, height_col, bmi_col,
     )
 
   # Register these columns as processed
-  adRutils:::register_processed("calculate_bmi_obesity", c(weight_col, height_col, bmi_col))
+  adRutils::register_processed("calculate_bmi_obesity", c(weight_col, height_col, bmi_col))
 
   return(modified_df)
 }
@@ -268,7 +268,7 @@ calculate_egfr <- function(dataf, creatinine_col, age_col, sex_col, force = FALS
 
   # Check if these columns have already been processed
   if (!force) {
-    adRutils:::is_processed("calculate_egfr", required_cols,
+    adRutils::is_processed("calculate_egfr", required_cols,
                             error_if_exists = TRUE)
   }
 
@@ -288,7 +288,7 @@ calculate_egfr <- function(dataf, creatinine_col, age_col, sex_col, force = FALS
   dataf$eGFR <- e_gfr
 
   # Register these columns as processed
-  adRutils:::register_processed("calculate_egfr", required_cols)
+  adRutils::register_processed("calculate_egfr", required_cols)
 
   return(dataf)
 }

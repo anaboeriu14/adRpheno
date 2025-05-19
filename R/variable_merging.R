@@ -108,7 +108,7 @@ merge_related_variables <- function(dataf, var_groups = NULL, pattern_extract = 
 
   # Check if these variables have already been processed
   if (!force) {
-    adRutils:::is_processed("merge_related_variables", all_vars, error_if_exists = TRUE)
+    adRutils::is_processed("merge_related_variables", all_vars, error_if_exists = TRUE)
   }
 
   # Create a copy of the data frame to modify
@@ -148,7 +148,7 @@ merge_related_variables <- function(dataf, var_groups = NULL, pattern_extract = 
   }
 
   # Register these variables as processed
-  adRutils:::register_processed("merge_related_variables", all_vars)
+  adRutils::register_processed("merge_related_variables", all_vars)
 
   return(result_df)
 }

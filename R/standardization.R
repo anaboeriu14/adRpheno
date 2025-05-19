@@ -67,7 +67,7 @@ standardize_variables <- function(dataf, vars, prefix = "zscore_",
 
   # Check if these variables have already been processed
   if (!force) {
-    adRutils:::is_processed("standardize_variables", vars, error_if_exists = TRUE)
+    adRutils::is_processed("standardize_variables", vars, error_if_exists = TRUE)
   }
 
   # Create new column names
@@ -113,7 +113,7 @@ standardize_variables <- function(dataf, vars, prefix = "zscore_",
   }
 
   # Register these variables as processed
-  adRutils:::register_processed("standardize_variables", vars)
+  adRutils::register_processed("standardize_variables", vars)
 
   return(df_standardized)
 }
