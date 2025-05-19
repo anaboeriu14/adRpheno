@@ -5,9 +5,9 @@
 #' Tracks processing to prevent duplicate calculations.
 #'
 #' @param dataf A data frame containing the data
-#' @param weight_col The name of the column containing weight in pounds (lbs)
-#' @param height_col The name of the column containing height in inches
-#' @param bmi_col The name of the column to store the BMI value
+#' @param weight_col String. The name of the column containing weight in pounds (lbs)
+#' @param height_col String. The name of the column containing height in inches
+#' @param bmi_col String. The name of the column to store the BMI value
 #' @param cutoff Numeric. BMI cutoff value for obesity classification (default: 30)
 #' @param force Logical. If TRUE, bypasses the check for previous processing (default: FALSE)
 #'
@@ -76,10 +76,10 @@ calculate_bmi_obesity <- function(dataf, weight_col, height_col, bmi_col,
 #' Tracks processing to prevent duplicate calculations.
 #'
 #' @param dataf A data frame containing blood pressure measurements
-#' @param systolic1 Name of the first systolic BP measurement column
-#' @param systolic2 Name of the second systolic BP measurement column
-#' @param diastolic1 Name of the first diastolic BP measurement column
-#' @param diastolic2 Name of the second diastolic BP measurement column
+#' @param systolic1 String. Name of the first systolic BP measurement column
+#' @param systolic2 String. Name of the second systolic BP measurement column
+#' @param diastolic1 String. Name of the first diastolic BP measurement column
+#' @param diastolic2 String. Name of the second diastolic BP measurement column
 #' @param calculate_map Logical. If TRUE, calculates mean arterial pressure (default: FALSE)
 #' @param calculate_pp Logical. If TRUE, calculates pulse pressure (default: TRUE)
 #' @param decimal_places Integer specifying decimal places for rounding (default: 2)

@@ -20,13 +20,13 @@ calculate_bp_metrics(
 \arguments{
 \item{dataf}{A data frame containing blood pressure measurements}
 
-\item{systolic1}{Name of the first systolic BP measurement column}
+\item{systolic1}{String. Name of the first systolic BP measurement column}
 
-\item{systolic2}{Name of the second systolic BP measurement column}
+\item{systolic2}{String. Name of the second systolic BP measurement column}
 
-\item{diastolic1}{Name of the first diastolic BP measurement column}
+\item{diastolic1}{String. Name of the first diastolic BP measurement column}
 
-\item{diastolic2}{Name of the second diastolic BP measurement column}
+\item{diastolic2}{String. Name of the second diastolic BP measurement column}
 
 \item{calculate_pp}{Logical. If TRUE, calculates pulse pressure (default: TRUE)}
 

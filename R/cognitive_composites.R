@@ -1,4 +1,4 @@
-#' Compute Demographically Adjusted Z-Scores and Composite Scores
+#' Compute Adjusted Composite Scores
 #'
 #' Computes z-scores for test scores adjusted for demographic factors and
 #' calculates composite scores for specified test groups.
@@ -14,6 +14,12 @@
 #' @param force Logical, whether to force recalculation if already processed (default: FALSE).
 #'
 #' @return A data frame with the original data, adjusted z-scores, and computed composite scores.
+#' @details This function expects that demographic grouping variables already exist in the data frame.
+#'  To create standardized demographic groupings, consider using the `create_flexible_groups()`
+#'  function from the adRutils package first.
+#'
+#' @seealso \code{\link[adRutils]{create_flexible_groups}}
+#'
 #' @examples
 #' \dontrun{
 #' # Define test groups
@@ -24,14 +30,14 @@
 #' )
 #'
 #' # Calculate composite scores with demographic adjustment
-#' result <- create_demographic_adjusted_composites(
+#' result <- create_adjusted_composites(
 #'   dataf = my_data,
 #'   test_groups = test_groups,
 #'   grouping_vars = c("age_group", "edu_group", "language_group")
 #' )
 #' }
 #' @export
-create_demographic_adjusted_composites <- function(dataf, test_groups, grouping_vars,
+create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
                                                    filters = NULL, digits = 3, force = FALSE) {
   # Input validation
   if (!is.data.frame(dataf)) {

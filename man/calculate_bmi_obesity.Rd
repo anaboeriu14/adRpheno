@@ -16,11 +16,11 @@ calculate_bmi_obesity(
 \arguments{
 \item{dataf}{A data frame containing the data}
 
-\item{weight_col}{The name of the column containing weight in pounds (lbs)}
+\item{weight_col}{String. The name of the column containing weight in pounds (lbs)}
 
-\item{height_col}{The name of the column containing height in inches}
+\item{height_col}{String. The name of the column containing height in inches}
 
-\item{bmi_col}{The name of the column to store the BMI value}
+\item{bmi_col}{String. The name of the column to store the BMI value}
 
 \item{cutoff}{Numeric. BMI cutoff value for obesity classification (default: 30)}
 
