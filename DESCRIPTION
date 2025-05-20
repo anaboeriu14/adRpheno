@@ -19,5 +19,5 @@ Imports:
     stringr,
     tidyr,
     rlang,
-    rxnorm,
-    utils
+    utils,
+    httr

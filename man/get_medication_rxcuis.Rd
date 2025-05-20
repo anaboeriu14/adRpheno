@@ -18,6 +18,8 @@ get_medication_rxcuis(
 )
 }
 \arguments{
+\item{dataf}{A data frame containing medication names}
+
 \item{med_column}{Character. Column containing medication names}
 
 \item{rxcui_column}{Character. Name for the output RxCUI column (default: "rxcui")}
@@ -35,8 +37,6 @@ get_medication_rxcuis(
 \item{force_reprocess}{Logical. Force reprocessing (default: FALSE)}
 
 \item{sleep_time}{Numeric. Sleep time between API calls in seconds (default: 0.1)}
-
-\item{data}{A data frame containing medication names}
 }
 \value{
 Updated data frame with RxCUI column

@@ -1,10 +1,55 @@
+#' Direct API call to RxNorm for approximate RxCUI lookup
+#'
+#' @param term Character. Medication term to look up
+#' @param maxEntries Numeric. Maximum number of entries to return (default: 3)
+#' @return Character. RxCUI if found, NA_character_ otherwise
+#' @export
+find_approx_rxcui <- function(term, maxEntries = 3) {
+  # Skip processing if term is NA or empty
+  if (is.na(term) || nchar(trimws(term)) == 0) {
+    return(NA_character_)
+  }
+
+  # Build URL with proper encoding
+  base_url <- "https://rxnav.nlm.nih.gov/REST/approximateTerm"
+  url <- paste0(base_url, "?term=", utils::URLencode(term), "&maxEntries=", maxEntries)
+
+  # Make the request
+  response <- try(httr::GET(url), silent = TRUE)
+
+  # Handle errors
+  if (inherits(response, "try-error")) {
+    return(NA_character_)
+  }
+
+  # Check response status
+  if (httr::status_code(response) != 200) {
+    return(NA_character_)
+  }
+
+  # Parse XML response
+  xml_text <- httr::content(response, "text", encoding = "UTF-8")
+
+  # First try to extract the first rxcui using regex
+  rxcui_match <- regexec("<rxcui>([^<]+)</rxcui>", xml_text)
+  rxcui <- regmatches(xml_text, rxcui_match)
+
+  # Check if we found any rxcui
+  if (length(rxcui) > 0 && length(rxcui[[1]]) > 1) {
+    return(rxcui[[1]][2])  # Return the captured group
+  }
+
+  # If we're here, no matches were found
+  return(NA_character_)
+}
+
 #' Get RxNorm RxCUIs for medication names in any dataset
 #'
 #' @description
 #' A generalized function to retrieve RxCUI codes for medication names
 #' in any dataset, with caching and handling of existing RxCUI columns.
 #'
-#' @param data A data frame containing medication names
+#' @param dataf A data frame containing medication names
 #' @param med_column Character. Column containing medication names
 #' @param rxcui_column Character. Name for the output RxCUI column (default: "rxcui")
 #' @param append Logical. If TRUE and rxcui_column exists, adds new column with suffix (default: TRUE)
@@ -113,10 +158,9 @@ get_medication_rxcuis <- function(dataf, med_column, rxcui_column = "rxcui",
       rxcui <- adRutils::get_from_cache(cache, med_name)
 
       if (is.null(rxcui)) {
-        # API lookup
+        # Direct API lookup
         tryCatch({
-          result <- rxnorm::find_approx_rxcui(med_name)
-          rxcui <- if (length(result) > 0 && !is.na(result[1])) as.character(result[1]) else NA_character_
+          rxcui <- find_approx_rxcui(med_name)
 
           # Add to cache
           cache <- adRutils::add_to_cache(cache, med_name, rxcui)

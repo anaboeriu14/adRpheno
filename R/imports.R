@@ -9,7 +9,6 @@
 #' @importFrom stats IQR as.formula model.matrix quantile
 #' @importFrom rlang .data :=
 #' @importFrom utils txtProgressBar setTxtProgressBar
-#' @import rxnorm
 #'
 #' @keywords internal
 NULL
