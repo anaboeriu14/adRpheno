@@ -9,7 +9,7 @@
 #' @param rxcui_column Character. Name for the output RxCUI column (default: "rxcui")
 #' @param append Logical. If TRUE and rxcui_column exists, adds new column with suffix (default: TRUE)
 #' @param batch_size Numeric. Medications per batch (default: 100)
-#' @param cache_name Character. Cache name (default: "rxnorm_cache")
+#' @param cache_name Character. Cache name (default: "rxcui_cache")
 #' @param cache_dir Character. Cache directory (default: "cache")
 #' @param save_freq Numeric. Save frequency (default: 100)
 #' @param force_reprocess Logical. Force reprocessing (default: FALSE)
@@ -17,37 +17,37 @@
 #'
 #' @return Updated data frame with RxCUI column
 #' @export
-get_medication_rxcuis <- function(data, med_column, rxcui_column = "rxcui",
+get_medication_rxcuis <- function(dataf, med_column, rxcui_column = "rxcui",
                                   append = TRUE, batch_size = 500,
-                                  cache_name = "rxnorm_cache", cache_dir = "cache",
+                                  cache_name = "rxcui_cache", cache_dir = "cache",
                                   save_freq = 100, force_reprocess = FALSE,
                                   sleep_time = 0.1) {
 
   # Validate inputs
-  if (!is.data.frame(data)) stop("'data' must be a data frame")
-  if (!med_column %in% names(data)) stop(paste("Column", med_column, "not found in data"))
+  if (!is.data.frame(dataf)) stop("'data' must be a data frame")
+  if (!med_column %in% names(dataf)) stop(paste("Column", med_column, "not found in data"))
 
   # Generate a unique tracking ID combining data dimensions and column name
   # This helps avoid conflicts when processing different datasets with same column names
-  tracking_id <- paste0(med_column, "_", nrow(data), "_", ncol(data))
+  tracking_id <- paste0(med_column, "_", nrow(dataf), "_", ncol(dataf))
 
   # Check if already processed with this exact tracking ID
   if (!force_reprocess && is_processed("get_medication_rxcuis", tracking_id)) {
     message("This specific dataset's '", med_column, "' column already processed. Use force_reprocess=TRUE to override.")
-    return(data)
+    return(dataf)
   }
 
   # Handle case where rxcui_column already exists
   original_rxcui_column <- rxcui_column
-  if (rxcui_column %in% names(data) && append) {
+  if (rxcui_column %in% names(dataf) && append) {
     # Create a new column name with suffix
     i <- 1
-    while(paste0(rxcui_column, "_", i) %in% names(data)) {
+    while(paste0(rxcui_column, "_", i) %in% names(dataf)) {
       i <- i + 1
     }
     rxcui_column <- paste0(rxcui_column, "_", i)
     message("Column '", original_rxcui_column, "' already exists. Using '", rxcui_column, "' instead.")
-  } else if (rxcui_column %in% names(data) && !append) {
+  } else if (rxcui_column %in% names(dataf) && !append) {
     message("Column '", rxcui_column, "' already exists and will be updated.")
   }
 
@@ -55,12 +55,12 @@ get_medication_rxcuis <- function(data, med_column, rxcui_column = "rxcui",
   cache <- adRutils::initialize_cache(cache_name, cache_dir)
 
   # Create or prepare output column
-  if (!(rxcui_column %in% names(data))) {
-    data[[rxcui_column]] <- NA_character_
+  if (!(rxcui_column %in% names(dataf))) {
+    dataf[[rxcui_column]] <- NA_character_
   }
 
   # Get unique medications that need processing
-  meds <- data[[med_column]]
+  meds <- dataf[[med_column]]
 
   # Skip NA medications
   valid_med_idx <- which(!is.na(meds))
@@ -71,16 +71,16 @@ get_medication_rxcuis <- function(data, med_column, rxcui_column = "rxcui",
   if (length(valid_med_idx) == 0) {
     message("No valid medication names found in column '", med_column, "'")
     adRutils::register_processed("get_medication_rxcuis", tracking_id)
-    return(data)
+    return(dataf)
   }
 
   # Identify which medications need RxCUI lookup
-  to_process_idx <- valid_med_idx[is.na(data[[rxcui_column]][valid_med_idx])]
+  to_process_idx <- valid_med_idx[is.na(dataf[[rxcui_column]][valid_med_idx])]
 
   if (length(to_process_idx) == 0) {
     message("All valid medications already have RxCUIs")
     adRutils::register_processed("get_medication_rxcuis", tracking_id)
-    return(data)
+    return(dataf)
   }
 
   # Get unique medication names for processing
@@ -136,7 +136,7 @@ get_medication_rxcuis <- function(data, med_column, rxcui_column = "rxcui",
       }
 
       # Update dataframe for all matching medications
-      data[[rxcui_column]][meds == med_name] <- rxcui
+      dataf[[rxcui_column]][meds == med_name] <- rxcui
     }
   }
 
@@ -149,7 +149,7 @@ get_medication_rxcuis <- function(data, med_column, rxcui_column = "rxcui",
   adRutils::register_processed("get_medication_rxcuis", tracking_id)
 
   # Report results
-  found_count <- sum(!is.na(data[[rxcui_column]][valid_med_idx]))
+  found_count <- sum(!is.na(dataf[[rxcui_column]][valid_med_idx]))
   message("\nFound RxCUIs for ", found_count, "/", length(valid_med_idx), " medications (",
           round(found_count/length(valid_med_idx)*100, 1), "% coverage)")
 
@@ -163,5 +163,5 @@ get_medication_rxcuis <- function(data, med_column, rxcui_column = "rxcui",
       message(" - ... and ", length(errors) - 5, " more errors")
     }
   }
-  return(data)
+  return(dataf)
 }

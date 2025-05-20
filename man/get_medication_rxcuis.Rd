@@ -5,12 +5,12 @@
 \title{Get RxNorm RxCUIs for medication names in any dataset}
 \usage{
 get_medication_rxcuis(
-  data,
+  dataf,
   med_column,
   rxcui_column = "rxcui",
   append = TRUE,
   batch_size = 500,
-  cache_name = "rxnorm_cache",
+  cache_name = "rxcui_cache",
   cache_dir = "cache",
   save_freq = 100,
   force_reprocess = FALSE,
@@ -18,8 +18,6 @@ get_medication_rxcuis(
 )
 }
 \arguments{
-\item{data}{A data frame containing medication names}
-
 \item{med_column}{Character. Column containing medication names}
 
 \item{rxcui_column}{Character. Name for the output RxCUI column (default: "rxcui")}
@@ -28,7 +26,7 @@ get_medication_rxcuis(
 
 \item{batch_size}{Numeric. Medications per batch (default: 100)}
 
-\item{cache_name}{Character. Cache name (default: "rxnorm_cache")}
+\item{cache_name}{Character. Cache name (default: "rxcui_cache")}
 
 \item{cache_dir}{Character. Cache directory (default: "cache")}
 
@@ -37,6 +35,8 @@ get_medication_rxcuis(
 \item{force_reprocess}{Logical. Force reprocessing (default: FALSE)}
 
 \item{sleep_time}{Numeric. Sleep time between API calls in seconds (default: 0.1)}
+
+\item{data}{A data frame containing medication names}
 }
 \value{
 Updated data frame with RxCUI column
