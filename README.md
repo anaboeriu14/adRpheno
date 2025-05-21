@@ -1,19 +1,21 @@
 
 # adRpheno
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/anaboeriu14/adRpheno/releases) [![adRutils Dependency](https://img.shields.io/badge/adRutils-%3E%3D%200.1.1-blue.svg)](https://github.com/anaboeriu14/adRutils)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/anaboeriu14/adRpheno/releases) [![adRutils Dependency](https://img.shields.io/badge/adRutils-%3E%3D%200.1.1-blue.svg)](https://github.com/anaboeriu14/adRutils)
 
 Tools for Alzheimer's Disease Endophenotype Analysis
 
 ## Overview
 
-`adRpheno` provides specialized functions for standardizing and analyzing Alzheimer's Disease (AD) endophenotypes. The package focuses on biomarker standardization, clinical measurement calculations, cognitive testing, and genetic data verification.
+`adRpheno` provides specialized functions for standardizing and analyzing Alzheimer's Disease (AD) endophenotypes.
+The package focuses on biomarker Z-score standardization, clinical measurement calculations, cognitive testing,
+genetic data verification and medication data preprocessing.
 
 ## Version Information
 
-**Current version:** 0.1.0
+**Current version:** 0.2.0
 
-See [Releases](https://github.com/anaboeriu14/adRpheno/releases) for detailed changelog and release notes.
+See [Releases](https://github.com/anaboeriu14/adRpheno/releases) for detailed change log and release notes.
 
 ## Installation
 
@@ -47,6 +49,8 @@ devtools::install_github("anaboeriu14/adRpheno")
 
 ## Features This package provides specialized tools for Alzheimer's Disease endophenotype analysis:
 
+All functions feature  caching and progress tracking for efficient usage
+
 ### Biomarker Processing
 
 -   `detect_outlier_thresholds()`: Calculate lower and upper bounds for outlier detection using IQR method
@@ -71,10 +75,22 @@ devtools::install_github("anaboeriu14/adRpheno")
 -   `match_snp_genotype()`: Match APOE SNPs (rs7412, rs429358) to expected genotypes
 -   `classify_apoe_risk_groups()`: Classify APOE genotypes into risk groups (e2+, e3/e3, e4+)
 
+### Medication Data Processing
+
+- `get_rxnorm_medication_names()` - Standardize medication names using RxNorm API (vector input)
+-  `correct_medication_names_df()` - Apply RxNorm standardization to dataframe columns
+- `add_medication_rxcuis()` - Retrieve RxCUI identifiers for medications 
+- `add_medication_atc2()` - Add ATC2 therapeutic classifications to medication data. 
+  Supports both nested and unnested formats for medications with multiple classifications
+
 ## Dependencies
 
-This package depends on: - [adRutils](https://github.com/anaboeriu14/adRutils) (\>= 0.1.1)
+This package depends on: 
+- [adRutils](https://github.com/anaboeriu14/adRutils) (\>= 0.1.1)
+- rxnorm,
+- httr, 
+- jsonlite
 
 ## License
 
-This project is licensed under the MIT License
+This project is licensed under the GLP (>=3) License

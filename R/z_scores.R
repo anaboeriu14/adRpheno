@@ -29,7 +29,7 @@
 #' # Group-wise standardization by grade
 #' standardize_variables(testD, c("score_math", "score_verbal"), group_vars = "grade_univ")
 #' }
-standardize_variables <- function(dataf, vars, prefix = "zscore_",
+compute_zscores <- function(dataf, vars, prefix = "zscore_",
                                   group_vars = NULL, remove_pattern = NULL,
                                   force = FALSE) {
   # Input validation

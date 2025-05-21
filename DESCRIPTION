@@ -8,7 +8,7 @@ Description: Tools for standardizing and analyzing Alzheimer's Disease (AD)
     and outlier detection, clinical measurement calculations (eGFR, BMI, arterial BP), 
     cognitive composite score computation, neuropsychological test processing, 
     and APOE genotype verification. 
-License: MIT + file LICENSE
+License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
@@ -20,4 +20,6 @@ Imports:
     tidyr,
     rlang,
     utils,
+    jsonlite,
+    rxnorm,
     httr
