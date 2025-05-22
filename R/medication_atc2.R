@@ -77,7 +77,7 @@ add_medication_atc2_nested <- function(dataf,
       new_cache_entries <- new_cache_entries + 1
 
       # Save cache occasionally
-      if (new_cache_entries %% 10 == 0) {
+      if (new_cache_entries %% 50 == 0) {
         adRutils::save_cache(cache, cache_name, cache_dir)
         message("\nSaved ", new_cache_entries, " new cache entries")
       }
@@ -90,7 +90,7 @@ add_medication_atc2_nested <- function(dataf,
   close(pb)
 
   # Save cache if there are new entries
-  if (new_cache_entries > 0 && new_cache_entries %% 10 != 0) {
+  if (new_cache_entries > 0 && new_cache_entries %% 50 != 0) {
     adRutils::save_cache(cache, cache_name, cache_dir)
     message("\nSaved ", new_cache_entries, " new cache entries")
   }
@@ -205,7 +205,7 @@ add_medication_atc2_unnested <- function(dataf,
       new_cache_entries <- new_cache_entries + 1
 
       # Save cache occasionally
-      if (new_cache_entries %% 10 == 0) {
+      if (new_cache_entries %% 50 == 0) {
         adRutils::save_cache(cache, cache_name, cache_dir)
         message("\nSaved ", new_cache_entries, " new cache entries")
       }
@@ -234,7 +234,7 @@ add_medication_atc2_unnested <- function(dataf,
   close(pb)
 
   # Save cache if there are new entries
-  if (new_cache_entries > 0 && new_cache_entries %% 10 != 0) {
+  if (new_cache_entries > 0 && new_cache_entries %% 50 != 0) {
     adRutils::save_cache(cache, cache_name, cache_dir)
     message("\nSaved ", new_cache_entries, " new cache entries")
   }

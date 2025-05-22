@@ -348,10 +348,6 @@ match_snp_genotype <- function(dataf, rs7412_col, rs429358_col, genotype_col,
 }
 
 
-
-
-
-
 #' Classify APOE genotypes into risk groups
 #'
 #' This function validates APOE genotypes and classifies them into risk groups
