@@ -37,3 +37,26 @@ Combines related variables into single variables using priority order.
 Takes the first non-NA value from each group of variables.
 Can work with manually specified groups or automatically detect groups by pattern.
 }
+\examples{
+\dontrun{
+data <- data.frame(
+  zscore_r3_nba = c(0.1, 0.2, NA),
+  zscore_r5_nba = c(NA, 0.3, 0.4),
+  zscore_r3_nhl = c(0.5, 0.6, NA),
+  zscore_r5_nhl = c(NA, NA, 0.7)
+)
+
+# Method 1: Manual groups (r3 has priority over r5)
+var_groups <- list(
+  nba = c("zscore_r3_nba", "zscore_r5_nba"),
+  nhl = c("zscore_r3_nhl", "zscore_r5_nhl")
+)
+coalesce_variables(data, var_groups, prefix = "zscore_")
+
+# Method 2: Automatic grouping by pattern
+coalesce_variables(data,
+                  pattern_extract = "r\\\\d+",
+                  pattern_replace = "zscore_r\\\\d+_",
+                  prefix = "zscore_")
+}
+}

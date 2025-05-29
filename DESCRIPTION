@@ -1,14 +1,14 @@
 Package: adRpheno
 Title: Tools for Alzheimer's Disease Endophenotype Analysis
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     person("Ana", "Boeriu", , "Ana.Boeiru@ucsf.edu", role = c("aut", "cre"))
 Description: Tools for standardizing and analyzing Alzheimer's Disease (AD) 
     endophenotypes. Functions include biomarker standardization 
     and outlier detection, clinical measurement calculations (eGFR, BMI, arterial BP), 
     cognitive composite score computation, neuropsychological test processing, 
-    and APOE genotype verification. 
-License: MIT + file LICENSE
+    and APOE genotype verification and medication data processing using RxNorm API. 
+License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

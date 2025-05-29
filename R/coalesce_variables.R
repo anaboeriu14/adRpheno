@@ -39,7 +39,7 @@
 #'                   pattern_extract = "r\\d+",
 #'                   pattern_replace = "zscore_r\\d+_",
 #'                   prefix = "zscore_")
-#'
+#'}
 coalesce_variables <- function(dataf, var_groups = NULL, pattern_extract = NULL,
                                     pattern_replace = NULL, prefix = "", force = FALSE) {
   # Input validation

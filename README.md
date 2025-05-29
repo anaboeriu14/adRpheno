@@ -76,12 +76,15 @@ All functions feature caching and progress tracking for efficient usage
 -   `match_snp_genotype()`: Match APOE SNPs (rs7412, rs429358) to expected genotypes
 -   `classify_apoe_risk_groups()`: Classify APOE genotypes into risk groups (e2+, e3/e3, e4+)
 
+### Medication Data Processing
+- `add_rxcuis()` - Get RxCUI identifiers for medication names using RxNorm API with caching
+- `add_atc2_classification()` - Add ATC2 therapeutic classifications to medications
 
 ## Dependencies
 
 This package depends on: 
-- [adRutils](https://github.com/anaboeriu14/adRutils) (\>= 0.1.1)
+- [adRutils](https://github.com/anaboeriu14/adRutils) (>= 0.1.1)
 
 ## License
 
-This project is licensed under the MIT License
+This project is licensed under the GLP-3 License
