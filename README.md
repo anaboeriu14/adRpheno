@@ -84,6 +84,7 @@ All functions feature caching and progress tracking for efficient usage
 
 This package depends on: 
 - [adRutils](https://github.com/anaboeriu14/adRutils) (>= 0.1.1)
+- [rxnorm](https://github.com/nt-williams/rxnorm),
 
 ## License
 
