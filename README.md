@@ -1,7 +1,7 @@
 
 # adRpheno
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/anaboeriu14/adRpheno/releases) [![adRutils Dependency](https://img.shields.io/badge/adRutils-%3E%3D%200.1.1-blue.svg)](https://github.com/anaboeriu14/adRutils)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/anaboeriu14/adRpheno/releases) [![adRutils Dependency](https://img.shields.io/badge/adRutils-%3E%3D%200.1.1-blue.svg)](https://github.com/anaboeriu14/adRutils)
 
 Tools for Alzheimer's Disease Endophenotype Analysis
 
