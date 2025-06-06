@@ -14,8 +14,8 @@
 #' @param batch_delay Seconds to wait between batches (default: 2)
 #'
 #' @return Named list mapping RxCUI to ATC2 classifications
-#' @keywords internal
-process_atc2_batch <- function(unique_rxcuis,
+#' @noRd
+.process_atc2_batch <- function(unique_rxcuis,
                                batch_size = 200, save_freq = 50,
                                cache_name = "atc2_cache", cache_dir = "cache",
                                max_age_days = 30, retry_count = 3,
@@ -33,6 +33,10 @@ process_atc2_batch <- function(unique_rxcuis,
 
   rxcui_to_atc2 <- list()
 
+  # Initialize progress bar for batches
+  prog_bar <- utils::txtProgressBar(min = 0, max = num_batches, style = 3, width = 50)
+  on.exit(close(prog_bar), add = TRUE)
+
   # Process in batches
   for (batch_num in seq_len(num_batches)) {
     start_idx <- (batch_num - 1) * batch_size + 1
@@ -41,6 +45,8 @@ process_atc2_batch <- function(unique_rxcuis,
 
     message(sprintf("Processing batch %d/%d (%d RxCUIs)",
                     batch_num, num_batches, length(batch_rxcuis)))
+
+    utils::setTxtProgressBar(prog_bar, batch_num -1 )
 
     batch_new_entries <- 0
 
@@ -87,6 +93,8 @@ process_atc2_batch <- function(unique_rxcuis,
       Sys.sleep(batch_delay)
     }
   }
+  # Final progress bar update
+  utils::setTxtProgressBar(prog_bar, num_batches)
 
   # Output summary
   cache_stats <- adRutils::get_cache_stats(cache)
@@ -98,8 +106,8 @@ process_atc2_batch <- function(unique_rxcuis,
 }
 
 #' Add ATC2 classifications to medications (nested version)
-#' @keywords internal
-add_medication_atc2_nested <- function(dataf, rxcui_col = "rxcui",
+#' @noRd
+.add_medication_atc2_nested <- function(dataf, rxcui_col = "rxcui",
                                        new_col_name = "atc2_class",
                                        ...) {
   # Validation
@@ -116,7 +124,7 @@ add_medication_atc2_nested <- function(dataf, rxcui_col = "rxcui",
   }
 
   # Process RxCUIs
-  rxcui_to_atc2 <- process_atc2_batch(unique_rxcuis, ...)
+  rxcui_to_atc2 <- .process_atc2_batch(unique_rxcuis, ...)
 
   # Apply to data frame (nested - join with semicolons)
   dataf[[new_col_name]] <- sapply(dataf[[rxcui_col]], function(rxcui) {
@@ -137,8 +145,8 @@ add_medication_atc2_nested <- function(dataf, rxcui_col = "rxcui",
 }
 
 #' Add ATC2 classifications to medications (unnested version)
-#' @keywords internal
-add_medication_atc2_unnested <- function(dataf, rxcui_col = "rxcui", new_col_name = "atc2_class", ...) {
+#' @noRd
+.add_medication_atc2_unnested <- function(dataf, rxcui_col = "rxcui", new_col_name = "atc2_class", ...) {
 
   if (!rxcui_col %in% names(dataf)) {
     stop(sprintf("Column '%s' not found in the data frame.", rxcui_col))
@@ -153,7 +161,7 @@ add_medication_atc2_unnested <- function(dataf, rxcui_col = "rxcui", new_col_nam
   }
 
   # Process RxCUIs
-  rxcui_to_atc2 <- process_atc2_batch(unique_rxcuis, ...)
+  rxcui_to_atc2 <- .process_atc2_batch(unique_rxcuis, ...)
 
   # Create mapping data frame (unnested - separate rows)
   atc2_mapping <- do.call(rbind, lapply(names(rxcui_to_atc2), function(rxcui) {

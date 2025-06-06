@@ -34,7 +34,7 @@ calculate_bp_metrics(
 
 \item{decimal_places}{Integer specifying decimal places for rounding (default: 2)}
 
-\item{force}{Logical. If TRUE, bypasses the check for previous processing (default: FALSE)}
+\item{force}{Logical. If TRUE, recalculates even if outputs already exist (default: FALSE)}
 
 \item{verbose}{Logical. If TRUE, prints informative messages (default: TRUE)}
 }
@@ -45,7 +45,7 @@ New columns are named \code{mean_arterial_pressure} or \code{pulse_pressure}
 \description{
 Calculates average systolic and diastolic blood pressure from two measurements,
 and optionally calculates mean arterial pressure (MAP) and/or pulse pressure.
-Tracks processing to prevent duplicate calculations.
+Uses output-based tracking to prevent duplicate calculations.
 }
 \details{
 Mean arterial pressure (MAP) is calculated as:

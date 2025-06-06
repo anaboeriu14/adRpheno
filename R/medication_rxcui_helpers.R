@@ -14,8 +14,8 @@
 #' @param cache_path Character. File path for cache storage
 #'
 #' @return Updated cache as a named list
-#' @keywords internal
-process_medications_batch <- function(to_process, method, batch_size,
+#' @noRd
+.process_medications_batch <- function(to_process, method, batch_size,
                                       save_freq, retry_count,
                                       batch_delay, cache, cache_path) {
   num_batches <- ceiling(length(to_process) / batch_size)
@@ -67,7 +67,6 @@ process_medications_batch <- function(to_process, method, batch_size,
 #' @param retry_count Integer. Number of retry attempts on failure
 #'
 #' @return Character. RxCUI if found, NA_character_ if not found or error
-#' @keywords internal
 #' @export
 get_single_rxcui <- function(med_name, method, retry_count) {
   for (attempt in 1:retry_count) {
@@ -86,9 +85,9 @@ get_single_rxcui <- function(med_name, method, retry_count) {
         json_data <- jsonlite::fromJSON(httr::content(response, "text", encoding = "UTF-8"))
 
         if (method == "exact") {
-          null_coalesce(json_data$idGroup$rxnorm[1], NA_character_)
+          .null_coalesce(json_data$idGroup$rxnorm[1], NA_character_)
         } else {
-          null_coalesce(json_data$approximateGroup$candidate$rxcui[1], NA_character_)
+          .null_coalesce(json_data$approximateGroup$candidate$rxcui[1], NA_character_)
         }
       } else {
         NA_character_
@@ -120,8 +119,8 @@ get_single_rxcui <- function(med_name, method, retry_count) {
 #' @param method Character. Method used ("exact" or "approximate")
 #'
 #' @return NULL (prints results to console)
-#' @keywords internal
-report_results <- function(result_df, original_df, rxcui_column, med_column, start_time, method) {
+#' @noRd
+.report_results <- function(result_df, original_df, rxcui_column, med_column, start_time, method) {
   found_count <- sum(!is.na(result_df[[rxcui_column]]))
   valid_count <- sum(!is.na(original_df[[med_column]]) & original_df[[med_column]] != "")
 
@@ -143,5 +142,5 @@ report_results <- function(result_df, original_df, rxcui_column, med_column, sta
 #' @param y Default value to return if x is NULL or NA
 #'
 #' @return x if not NULL/NA, otherwise y
-#' @keywords internal
-null_coalesce <- function(x, y) if (is.null(x) || is.na(x)) y else x
+#' @noRd
+.null_coalesce <- function(x, y) if (is.null(x) || is.na(x)) y else x

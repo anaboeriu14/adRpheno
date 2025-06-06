@@ -20,4 +20,3 @@ Character. RxCUI if found, NA_character_ if not found or error
 Makes a single API call to RxNorm to retrieve the RxCUI for one medication,
 with automatic retry logic for failed requests and proper error handling.
 }
-\keyword{internal}

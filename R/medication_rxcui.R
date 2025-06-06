@@ -84,7 +84,7 @@ add_rxcuis <- function(dataf, med_column, rxcui_column = "rxcui",
 
   # Process in batches
   if (length(to_process) > 0) {
-    cache <- process_medications_batch(to_process, method, batch_size, save_freq,
+    cache <- .process_medications_batch(to_process, method, batch_size, save_freq,
                                        retry_count, batch_delay, cache, cache_path)
   }
 
@@ -93,7 +93,7 @@ add_rxcuis <- function(dataf, med_column, rxcui_column = "rxcui",
   rxcui_lookup <- character(length(unique_meds))
   names(rxcui_lookup) <- unique_meds
   for (med in unique_meds) {
-    rxcui_lookup[med] <- null_coalesce(cache[[med]], NA_character_)
+    rxcui_lookup[med] <- .null_coalesce(cache[[med]], NA_character_)
   }
   result_df[[rxcui_column]] <- rxcui_lookup[result_df[[med_column]]]
 
@@ -101,7 +101,7 @@ add_rxcuis <- function(dataf, med_column, rxcui_column = "rxcui",
   saveRDS(list(cache = cache, timestamp = Sys.time()), cache_path)
 
   # Report results
-  report_results(result_df, dataf, rxcui_column, med_column, start_time, method)
+  .report_results(result_df, dataf, rxcui_column, med_column, start_time, method)
 
   return(result_df)
 }

@@ -15,8 +15,8 @@ add_atc2_classification <- function(dataf, rxcui_col = "rxcui", new_col_name = "
                                     unnest = TRUE, ...) {
 
   if (unnest) {
-    add_medication_atc2_unnested(dataf, rxcui_col, new_col_name, ...)
+    .add_medication_atc2_unnested(dataf, rxcui_col, new_col_name, ...)
   } else {
-    add_medication_atc2_nested(dataf, rxcui_col, new_col_name, ...)
+    .add_medication_atc2_nested(dataf, rxcui_col, new_col_name, ...)
   }
 }

@@ -10,7 +10,8 @@ calculate_bmi_obesity(
   height_col,
   bmi_col,
   cutoff = 30,
-  force = FALSE
+  force = FALSE,
+  warn = TRUE
 )
 }
 \arguments{
@@ -24,7 +25,9 @@ calculate_bmi_obesity(
 
 \item{cutoff}{Numeric. BMI cutoff value for obesity classification (default: 30)}
 
-\item{force}{Logical. If TRUE, bypasses the check for previous processing (default: FALSE)}
+\item{force}{Logical. If TRUE, recalculates even if outputs already exist (default: FALSE)}
+
+\item{warn}{Logical. If TRUE, shows informative messages (default: TRUE)}
 }
 \value{
 Data frame with calculated BMI values and obesity classification
@@ -32,7 +35,7 @@ Data frame with calculated BMI values and obesity classification
 \description{
 Calculates BMI using imperial units (weight in pounds, height in inches),
 renames measurement columns for clarity, and adds obesity classification.
-Tracks processing to prevent duplicate calculations.
+Uses output-based tracking to prevent duplicate calculations.
 }
 \examples{
 \dontrun{

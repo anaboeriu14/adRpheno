@@ -4,7 +4,14 @@
 \alias{calculate_egfr}
 \title{Calculate estimated Glomerular Filtration Rate (eGFR)}
 \usage{
-calculate_egfr(dataf, creatinine_col, age_col, sex_col, force = FALSE)
+calculate_egfr(
+  dataf,
+  creatinine_col,
+  age_col,
+  sex_col,
+  force = FALSE,
+  warn = TRUE
+)
 }
 \arguments{
 \item{dataf}{A data frame containing the input data}
@@ -15,14 +22,16 @@ calculate_egfr(dataf, creatinine_col, age_col, sex_col, force = FALSE)
 
 \item{sex_col}{String specifying the column name for sex (0 for male, 1 for female)}
 
-\item{force}{Logical. If TRUE, bypasses the check for previous processing (default: FALSE)}
+\item{force}{Logical. If TRUE, recalculates even if eGFR already exists (default: FALSE)}
+
+\item{warn}{Logical. If TRUE, shows informative messages (default: TRUE)}
 }
 \value{
 Data frame with added eGFR column
 }
 \description{
 Calculates eGFR using the CKD-EPI formula based on serum creatinine, age,
-and sex. Tracks processing to prevent duplicate calculations.
+and sex. Uses output-based tracking to prevent duplicate calculations.
 }
 \details{
 Uses the CKD-EPI (Chronic Kidney Disease Epidemiology Collaboration) equation:
