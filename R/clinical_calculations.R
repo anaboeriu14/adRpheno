@@ -329,21 +329,6 @@ calculate_egfr <- function(dataf, creatinine_col, age_col, sex_col,
     }
   }
 
-  # Function-specific processing check (only if not forcing and eGFR doesn't exist)
-  if (!force && !"eGFR" %in% names(dataf)) {
-    tryCatch({
-      adRutils::is_processed("calculate_egfr", required_cols,
-                             error_if_exists = TRUE)
-    }, error = function(e) {
-      if (grepl("already been processed", e$message)) {
-        if (warn) message("eGFR processing markers detected. Use force=TRUE to override.")
-        return(dataf)
-      } else {
-        stop(e)
-      }
-    })
-  }
-
   # Constants based on gender
   kappa <- ifelse(dataf[[sex_col]] == 1, 0.7, 0.9)        # kF for females, kM for males
   alpha <- ifelse(dataf[[sex_col]] == 1, -0.241, -0.302)  # aF for females, aM for males
