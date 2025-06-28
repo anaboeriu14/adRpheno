@@ -9,6 +9,7 @@ calculate_egfr(
   creatinine_col,
   age_col,
   sex_col,
+  egfr_col = "eGFR",
   force = FALSE,
   warn = TRUE
 )
@@ -21,6 +22,8 @@ calculate_egfr(
 \item{age_col}{String specifying the column name for age in years}
 
 \item{sex_col}{String specifying the column name for sex (0 for male, 1 for female)}
+
+\item{egfr_col}{Character string for the output column name (default: "eGFR")}
 
 \item{force}{Logical. If TRUE, recalculates even if eGFR already exists (default: FALSE)}
 
@@ -56,4 +59,5 @@ where:
 testD <- data.frame(creatinine = c(1.2, 0.8), age = c(50, 60), sex = c(0, 1))
 calculate_egfr(testD, "creatinine", "age", "sex")
 }
+
 }

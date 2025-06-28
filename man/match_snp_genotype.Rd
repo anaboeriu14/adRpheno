@@ -17,9 +17,9 @@ match_snp_genotype(
 \arguments{
 \item{dataf}{A data frame containing SNPs and genotypes as columns}
 
-\item{rs7412_col}{The name of the rs7412 SNP column (TT=e2, CT=e3, CC=e4 determining)}
+\item{rs7412_col}{The name of the rs7412 SNP column}
 
-\item{rs429358_col}{The name of the rs429358 SNP column (TT=e2/e3, CT=e4, CC=e4 determining)}
+\item{rs429358_col}{The name of the rs429358 SNP column}
 
 \item{genotype_col}{The name of the genotype column to check}
 
@@ -27,53 +27,11 @@ match_snp_genotype(
 
 \item{show_details}{Logical, whether to include detailed columns in output (default: TRUE)}
 
-\item{genotype_format}{String indicating the format of the genotype column (default: "standard")
-Options: "standard" (E2E3), "numeric" (23), or "slash" (e2/e3)}
+\item{genotype_format}{String indicating the format of the genotype column (default: "standard")}
 }
 \value{
-A data frame with added columns when show_details=TRUE:
-\itemize{
-\item \code{input_genotype_std}: The standardized version of the input genotype
-\item \code{snp_derived_genotype}: The expected APOE genotype based on SNPs
-\item \code{genotype_match}: "yes" if genotype matches SNPs, "no" if it doesn't
-}
-
-When show_details=FALSE, only the genotype_match column is added
-If return_all=FALSE, only returns rows with mismatches
+A data frame with validation results
 }
 \description{
 Match APOE SNPs to genotypes
-}
-\details{
-This function validates whether the SNP combinations match the expected APOE genotypes.
-APOE genotype is determined by two SNPs:
-\itemize{
-\item rs7412 (T/C): T allele = ε2, C allele = ε3/ε4
-\item rs429358 (T/C): T allele = ε2/ε3, C allele = ε4
-}
-
-The combinations lead to the following genotypes:
-\itemize{
-\item rs7412(TT) + rs429358(TT) = E2E2
-\item rs7412(TT) + rs429358(CT) = E2E3
-\item rs7412(CT) + rs429358(CT) = E2E4
-\item rs7412(TT) + rs429358(CC) = E3E3
-\item rs7412(CT) + rs429358(CC) = E3E4
-\item rs7412(CC) + rs429358(CC) = E4E4
-}
-}
-\examples{
-test_data <- data.frame(
-  id = c(1, 2, 3, 4, 5, 6),
-  rs7412 = c("TT", "TT", "CT", "TT", "CT", "CC"),
-  rs429358 = c("TT", "CT", "CT", "CC", "CC", "CC"),
-  genotype = c("E2E2", "E2E3", "E2E4", "E3E3", "E3E4", "E4E4")
-)
-# Check all genotypes
-match_snp_genotype(test_data, "rs7412", "rs429358", "genotype")
-
-# Only return mismatches with minimal columns
-test_data$genotype[3] <- "E3E3"  # Introduce a mismatch
-match_snp_genotype(test_data, "rs7412", "rs429358", "genotype",
-                   return_all = FALSE, show_details = FALSE)
 }

@@ -22,58 +22,13 @@ classify_apoe_risk_groups(
 
 \item{na.rm}{Logical, whether to ignore NA values (default: FALSE)}
 
-\item{error_on_invalid}{Logical, whether to error on invalid genotypes (default: TRUE).
-If FALSE, invalid values will be assigned NA in the risk group.}
+\item{error_on_invalid}{Logical, whether to error on invalid genotypes (default: TRUE)}
 
-\item{genotype_format}{String indicating the format of the genotype column (default: "standard").
-Options: "standard" (E2E3), "numeric" (23), or "slash" (e2/e3)}
+\item{genotype_format}{String indicating the format of the genotype column (default: "standard")}
 }
 \value{
-A data frame with an additional factor column containing the APOE risk groups.
+A data frame with an additional factor column containing the APOE risk groups
 }
 \description{
-This function validates APOE genotypes and classifies them into risk groups
-based on established research on APOE allele-related risk for Alzheimer's disease.
-}
-\details{
-The function recognizes six valid APOE genotypes (case-insensitive and in various formats):
-\itemize{
-\item E2/E2, E2/E3: Classified as "e2+" (potentially protective)
-\item E3/E3: Classified as "e3/e3" (reference/neutral risk)
-\item E2/E4, E3/E4, E4/E4: Classified as "e4+" (increased risk)
-}
-
-The risk grouping is based on research showing e4 alleles increase Alzheimer's risk,
-while e2 alleles may be protective. The e3/e3 genotype is considered the population
-reference.
-
-The resulting risk group column is a factor with levels ordered as "e3/e3" (reference),
-"e2+", and "e4+" to facilitate statistical contrasts.
-}
-\examples{
-# Basic usage with standard format genotypes
-test_data <- data.frame(
-  id = 1:7,
-  apoe = c("E2E2", "E2E3", "E3E3", "E2E4", "E3E4", "E4E4", NA)
-)
-result <- classify_apoe_risk_groups(test_data, "apoe")
-
-# Using alternative formats
-numeric_data <- data.frame(
-  id = 1:3,
-  apoe_numeric = c("22", "23", "34")
-)
-result2 <- classify_apoe_risk_groups(numeric_data, "apoe_numeric",
-                                     genotype_format = "numeric")
-
-# Custom risk group column name
-result3 <- classify_apoe_risk_groups(test_data, "apoe", group_col = "ad_risk")
-
-# Handle invalid genotypes without error
-invalid_data <- data.frame(
-  id = 1:3,
-  apoe = c("E2E2", "INVALID", "E4E4")
-)
-result4 <- classify_apoe_risk_groups(invalid_data, "apoe",
-                                    error_on_invalid = FALSE)
+Classify APOE genotypes into risk groups
 }

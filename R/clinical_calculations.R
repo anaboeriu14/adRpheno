@@ -23,52 +23,40 @@
 #' }
 calculate_bmi_obesity <- function(dataf, weight_col, height_col, bmi_col,
                                   cutoff = 30, force = FALSE, warn = TRUE) {
+
   # Input validation
-  if (!is.data.frame(dataf)) {
-    stop("Input 'dataf' must be a data frame.")
-  }
-
-  # Check if columns exist
-  required_cols <- c(weight_col, height_col, bmi_col)
-  missing_cols <- required_cols[!required_cols %in% names(dataf)]
-  if (length(missing_cols) > 0) {
-    stop("The following columns do not exist in the data: ",
-         paste(missing_cols, collapse = ", "))
-  }
-
-  # Check if columns are numeric
-  for (col in c(weight_col, height_col)) {
-    if (!is.numeric(dataf[[col]])) {
-      stop("Column '", col, "' must be numeric.")
-    }
-  }
+  adRutils::validate_params(
+    data = dataf,
+    columns = c(weight_col, height_col, bmi_col),
+    numeric_columns = c(weight_col, height_col),
+    custom_checks = list(
+      list(condition = is.numeric(cutoff) && length(cutoff) ==1 && cutoff >0,
+           message = "cutoff must be a single positive number"),
+      list(condition = is.logical(force) | is.logical(warn),
+           message = "force & warn must be logical (TRUE/FALSE)")
+      ),
+    context = "calculate_bmi_obesity"
+  )
 
   # Define expected output columns
   output_cols <- c("weight_lbs", "height_inch", "bmi_imperial", "obesity")
 
   # Check if BMI calculation already completed (output-based check)
-  if (all(output_cols %in% names(dataf))) {
-    if (force) {
-      if (warn) message("Recalculating BMI and obesity status (force = TRUE)")
-    } else {
-      if (warn) message("BMI calculation already completed. Use force=TRUE to recalculate.")
-      return(dataf)
-    }
+  if (all(output_cols %in% names(dataf)) && !force) {
+    if (warn) message("BMI calculation already completed. Use force=TRUE to recalculate.")
+    return(dataf)
+  }
+  if (all(output_cols %in% names(dataf)) && force && warn) {
+    message("Recalculating BMI and obesity status (force = TRUE)")
   }
 
+  required_cols <- c(weight_col, height_col, bmi_col)
+
   # Function-specific processing check (only if not forcing)
-  if (!force) {
-    tryCatch({
-      adRutils::is_processed("calculate_bmi_obesity", required_cols,
-                             error_if_exists = TRUE)
-    }, error = function(e) {
-      if (grepl("already been processed", e$message)) {
-        if (warn) message("BMI processing markers detected. Use force=TRUE to override.")
-        return(dataf)
-      } else {
-        stop(e)
-      }
-    })
+  already_processed <- !force && adRutils::is_processed("calculate_bmi_obesity", required_cols, error_if_exists = FALSE)
+  if (already_processed) {
+    if (warn) message("BMI processing markers detected. Use force=TRUE to override.")
+    return(dataf)
   }
 
   # Rename columns for clarity
@@ -76,11 +64,8 @@ calculate_bmi_obesity <- function(dataf, weight_col, height_col, bmi_col,
     dplyr::rename(
       weight_lbs = !!dplyr::sym(weight_col),
       height_inch = !!dplyr::sym(height_col),
-      bmi_imperial = !!dplyr::sym(bmi_col)
-    )
-
-  # Calculate BMI and obesity status
-  modified_df <- modified_df %>%
+      bmi_original = !!dplyr::sym(bmi_col)
+    ) %>%
     dplyr::mutate(
       bmi_imperial = round(703 * (.data$weight_lbs / .data$height_inch^2), 2),
       obesity = dplyr::if_else(.data$bmi_imperial < cutoff, 0, 1)
@@ -147,30 +132,25 @@ calculate_bmi_obesity <- function(dataf, weight_col, height_col, bmi_col,
 calculate_bp_metrics <- function(dataf, systolic1, systolic2, diastolic1, diastolic2,
                                  calculate_pp = TRUE, calculate_map = FALSE,
                                  decimal_places = 2, force = FALSE, verbose = TRUE) {
-  # Input validation
-  if (!is.data.frame(dataf)) {
-    stop("Input 'dataf' must be a data frame.")
-  }
 
-  # Check if columns exist
   required_cols <- c(systolic1, systolic2, diastolic1, diastolic2)
-  missing_cols <- required_cols[!required_cols %in% names(dataf)]
-  if (length(missing_cols) > 0) {
-    stop("The following columns do not exist in the data: ",
-         paste(missing_cols, collapse = ", "))
-  }
 
-  # Check if columns are numeric
-  for (col in required_cols) {
-    if (!is.numeric(dataf[[col]])) {
-      stop("Column '", col, "' must be numeric.")
-    }
-  }
+  # Input validation
+  adRutils::validate_params(
+    data = dataf,
+    columns = required_cols,
+    numeric_columns = required_cols,
+    custom_checks = list(
+      list(condition = calculate_map || calculate_pp,
+           message = "At least one calculation (MAP or pulse pressure) must be requested"),
+      list(condition = is.numeric(decimal_places) && length(decimal_places) == 1 && decimal_places >= 0,
+           message = "decimal_places must be a single non-negative number"),
+      list(condition = is.logical(force) && is.logical(verbose),
+           message = "force and verbose must be logical (TRUE/FALSE)")
+    ),
+    context = "calculate_bp_metrics"
+  )
 
-  # Check if at least one calculation is requested
-  if (!calculate_map && !calculate_pp) {
-    stop("At least one calculation (MAP or pulse pressure) must be requested.")
-  }
 
   # Define expected output columns based on what's requested
   base_output_cols <- c("avg_systolic_bp", "avg_diastolic_bp")
@@ -181,72 +161,66 @@ calculate_bp_metrics <- function(dataf, systolic1, systolic2, diastolic1, diasto
   expected_outputs <- c(base_output_cols, optional_output_cols)
 
   # Check if BP calculations already completed (output-based check)
-  if (all(expected_outputs %in% names(dataf))) {
-    if (force) {
-      if (verbose) message("Recalculating blood pressure metrics (force = TRUE)")
-    } else {
-      if (verbose) message("Blood pressure calculations already completed. Use force=TRUE to recalculate.")
-      return(dataf)
-    }
+  if (all(expected_outputs %in% names(dataf)) && !force) {
+    if (verbose) message("Blood pressure calculations already completed. Use force=TRUE to recalculate.")
+    return(dataf)
+  }
+  if (all(expected_outputs %in% names(dataf)) && force && verbose) {
+    message("Recalculating blood pressure metrics (force = TRUE)")
   }
 
   # Function-specific processing check (only if not forcing)
-  if (!force) {
-    tryCatch({
-      adRutils::is_processed("calculate_bp_metrics", required_cols,
-                             error_if_exists = TRUE)
-    }, error = function(e) {
-      if (grepl("already been processed", e$message)) {
-        if (verbose) message("BP processing markers detected. Use force=TRUE to override.")
-        return(dataf)
-      } else {
-        stop(e)
-      }
-    })
+  already_processed <- !force && adRutils::is_processed("calculate_bp_metrics", required_cols, error_if_exists = FALSE)
+  if (already_processed) {
+    if (verbose) message("BP processing markers detected. Use force=TRUE to override.")
+    return(dataf)
   }
 
   # Display informative message about which calculations will be performed
   if (verbose) {
-    if (calculate_map && calculate_pp) {
-      message("Calculating average BP values, Mean Arterial Pressure (MAP), and Pulse Pressure (PP)")
-    } else if (calculate_map) {
-      message("Calculating average BP values and Mean Arterial Pressure (MAP)")
-    } else if (calculate_pp) {
-      message("Calculating average BP values and Pulse Pressure (PP)")
-    }
+    calculations <- c()
+    if (calculate_map) calculations <- c(calculations, "Mean Arterial Pressure (MAP)")
+    if (calculate_pp) calculations <- c(calculations, "Pulse Pressure (PP)")
+    message(paste0("Calculating average BP values",
+                   if(length(calculations) > 0) " and ",
+                   paste(calculations, collapse = ", ")))
   }
 
-  # Make a copy of the data frame
-  result_df <- dataf
 
-  # Calculate average systolic BP
-  result_df$avg_systolic_bp <- rowMeans(
-    result_df[, c(systolic1, systolic2), drop = FALSE],
-    na.rm = TRUE
-  )
-
-  # Calculate average diastolic BP
-  result_df$avg_diastolic_bp <- rowMeans(
-    result_df[, c(diastolic1, diastolic2), drop = FALSE],
-    na.rm = TRUE
-  )
-
-  # Calculate mean arterial pressure (MAP) if requested
-  if (calculate_map) {
-    result_df$mean_arterial_pressure <- round(
-      result_df$avg_diastolic_bp +
-        ((result_df$avg_systolic_bp - result_df$avg_diastolic_bp) / 3),
-      decimal_places
+  # compute MAP, PP
+  result_df <- dataf %>%
+    dplyr::mutate(
+      avg_systolic_bp = rowMeans(
+        dplyr::select(.data, dplyr::all_of(c(systolic1, systolic2))),
+        na.rm = TRUE
+      ),
+      avg_diastolic_bp = rowMeans(
+        dplyr::select(.data, dplyr::all_of(c(diastolic1, diastolic2))),
+        na.rm = TRUE
+      )
     )
+
+  #calculate MAP
+  if (calculate_map) {
+    result_df <- result_df %>%
+      dplyr::mutate(
+        mean_arterial_pressure = round(
+          .data$avg_diastolic_bp + ((.data$avg_systolic_bp - .data$avg_diastolic_bp) / 3),
+          decimal_places
+        )
+      )
     if (verbose) message("- Added column 'mean_arterial_pressure'")
   }
 
-  # Calculate pulse pressure if requested
+  # calculate pulse pressure
   if (calculate_pp) {
-    result_df$pulse_pressure <- round(
-      result_df$avg_systolic_bp - result_df$avg_diastolic_bp,
-      decimal_places
-    )
+    result_df <- result_df %>%
+      dplyr::mutate(
+        pulse_pressure = round(
+          .data$avg_systolic_bp - .data$avg_diastolic_bp,
+          decimal_places
+        )
+      )
     if (verbose) message("- Added column 'pulse_pressure'")
   }
 
@@ -267,6 +241,7 @@ calculate_bp_metrics <- function(dataf, systolic1, systolic2, diastolic1, diasto
 #' @param creatinine_col String specifying the column name for serum creatinine in mg/dL
 #' @param age_col String specifying the column name for age in years
 #' @param sex_col String specifying the column name for sex (0 for male, 1 for female)
+#' @param egfr_col Character string for the output column name (default: "eGFR")
 #' @param force Logical. If TRUE, recalculates even if eGFR already exists (default: FALSE)
 #' @param warn Logical. If TRUE, shows informative messages (default: TRUE)
 #'
@@ -296,38 +271,38 @@ calculate_bp_metrics <- function(dataf, systolic1, systolic2, diastolic1, diasto
 #' testD <- data.frame(creatinine = c(1.2, 0.8), age = c(50, 60), sex = c(0, 1))
 #' calculate_egfr(testD, "creatinine", "age", "sex")
 #' }
+#'
 calculate_egfr <- function(dataf, creatinine_col, age_col, sex_col,
-                           force = FALSE, warn = TRUE) {
+                           egfr_col = "eGFR", force = FALSE, warn = TRUE) {
+
   # Input validation
-  if (!is.data.frame(dataf)) {
-    stop("Input 'dataf' must be a data frame.")
-  }
+  adRutils::validate_params(
+    data = dataf,
+    columns = c(creatinine_col, age_col, sex_col),
+    numeric_columns = c(creatinine_col, age_col),
+    custom_checks = list(
+      list(condition = is.logical(force) && is.logical(warn),
+           message = "force and warn must be logical (TRUE/FALSE)"),
 
-  # Check if columns exist
+      list(condition = is.character(sex_col) && length(sex_col) > 0,
+           message = "sex_col must be a non-empty character vector")
+    ),
+    context = "calculate_egfr"
+  )
+
   required_cols <- c(creatinine_col, age_col, sex_col)
-  missing_cols <- required_cols[!required_cols %in% names(dataf)]
-  if (length(missing_cols) > 0) {
-    stop("The following columns do not exist in the data: ",
-         paste(missing_cols, collapse = ", "))
+
+  # Check if already calculated
+  if (egfr_col %in% names(dataf) && !force) {
+    if (warn) message("eGFR already calculated. Use force=TRUE to recalculate.")
+    return(dataf)
   }
 
-  # Check column types
-  if (!is.numeric(dataf[[creatinine_col]]) || !is.numeric(dataf[[age_col]])) {
-    stop("Creatinine and age columns must be numeric.")
-  }
-  if (!all(dataf[[sex_col]] %in% c(0, 1))) {
-    stop("Sex column must contain values 0 (male) or 1 (female).")
+  if (egfr_col %in% names(dataf) && force && warn) {
+    message("Recalculating eGFR (force = TRUE)")
   }
 
-  # Check if eGFR already calculated (output-based check)
-  if ("eGFR" %in% names(dataf)) {
-    if (force) {
-      if (warn) message("Recalculating eGFR (force = TRUE)")
-    } else {
-      if (warn) message("eGFR already exists. Use force=TRUE to recalculate.")
-      return(dataf)
-    }
-  }
+  if (warn) message("Calculating eGFR using CKD-EPI 2021 formula")
 
   # Constants based on gender
   kappa <- ifelse(dataf[[sex_col]] == 1, 0.7, 0.9)        # kF for females, kM for males
@@ -338,8 +313,7 @@ calculate_egfr <- function(dataf, creatinine_col, age_col, sex_col,
   e_gfr <- 142 *
     (pmin(dataf[[creatinine_col]] / kappa, 1))^alpha *
     (pmax(dataf[[creatinine_col]] / kappa, 1))^(-1.200) *
-    (0.9938^dataf[[age_col]]) *
-    sex_factor
+    (0.9938^dataf[[age_col]]) * sex_factor
 
   # Add eGFR column to dataframe
   dataf$eGFR <- e_gfr

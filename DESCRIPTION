@@ -14,7 +14,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
     dplyr,
-    adRutils (>= 0.1.1),
+    adRutils (>= 0.2.0),
     stats,
     stringr,
     tidyr,

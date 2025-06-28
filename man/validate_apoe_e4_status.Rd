@@ -37,49 +37,7 @@ and 'e4_status_valid' columns
 If no mismatches found: returns message "No mismatches found"
 }
 \description{
-Validate APOE e4 carrier status
-}
-\details{
-APOE e4 carrier status should be assigned to genotypes containing e4: e2/e4, e3/e4, e4/e4
-All other genotypes should be e4 negative.
-
-The function handles multiple formats of genotype data:
-\itemize{
-\item Standard format: E2E3, e2e4, E3E4, etc.
-\item Numeric format: 23, 34, 44, etc.
-\item Slash format: e2/e3, E3/E4, etc.
-}
-
-The function also handles various representations of e4 positive/negative status:
-\itemize{
-\item Binary: 0/1
-\item Text: yes/no, y/n, true/false, t/f (case-insensitive)
-}
-}
-\examples{
-# Standard format with binary e4 status
-test_data1 <- data.frame(
-  subject_id = c("S001", "S002", "S003"),
-  apoe_genotype = c("E2E4", "E3E3", "E3E4"),
-  e4_status = c(1, 0, 1)
-)
-validate_apoe_e4_status(test_data1, "apoe_genotype", "e4_status")
-
-# Yes/No format with slash genotypes
-test_data2 <- data.frame(
-  subject_id = c("S001", "S002", "S003"),
-  apoe_alleles = c("e2/e4", "e3/e3", "e3/e4"),
-  e4_carrier = c("Yes", "No", "No")  # Note: S003 is incorrectly labeled
-)
-validate_apoe_e4_status(test_data2, "apoe_alleles", "e4_carrier",
-                        genotype_format = "slash")
-
-# Numeric format genotypes
-test_data3 <- data.frame(
-  subject_id = c("S001", "S002", "S003"),
-  apoe_numeric = c("24", "33", "34"),
-  has_e4 = c("TRUE", "FALSE", "TRUE")
-)
-validate_apoe_e4_status(test_data3, "apoe_numeric", "has_e4",
-                        genotype_format = "numeric")
+Function uses these constants:
+VALID_APOE_GENOTYPES <- c("E2E2", "E2E3", "E2E4", "E3E3", "E3E4", "E4E4")
+E4_CARRIER_GENOTYPES <- c("E2E4", "E3E4", "E4E4")
 }
