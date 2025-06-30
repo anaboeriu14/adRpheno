@@ -161,8 +161,8 @@ calculate_bp_metrics <- function(dataf, systolic1, systolic2, diastolic1, diasto
   # compute avg_systolic_bp, avg_diastolic_bp
   result_df <- dataf %>%
     dplyr::mutate(
-      avg_systolic_bp = rowMeans(dplyr::select(.data, dplyr::all_of(c(systolic1, systolic2))), na.rm = TRUE),
-      avg_diastolic_bp = rowMeans(dplyr::select(.data, dplyr::all_of(c(diastolic1, diastolic2))), na.rm = TRUE)
+      avg_systolic_bp = rowMeans(dplyr::select(., dplyr::all_of(c(systolic1, systolic2))), na.rm = TRUE),
+      avg_diastolic_bp = rowMeans(dplyr::select(., dplyr::all_of(c(diastolic1, diastolic2))), na.rm = TRUE)
     )
 
   #optional calculations (MAP, PP)
@@ -180,7 +180,7 @@ calculate_bp_metrics <- function(dataf, systolic1, systolic2, diastolic1, diasto
     if (verbose) message("- Added column 'pulse_pressure'")
   }
 
-  .complete_processing("calculate_bp_metrics", required_cols)
+  .complete_processing("calculate_bp_metrics", required_cols, verbose)
 
 
   return(result_df)
