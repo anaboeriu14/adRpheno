@@ -38,34 +38,45 @@
 #' }
 #' @export
 create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
-                                                   filters = NULL, digits = 3, force = FALSE) {
-  # Input validation
-  if (!is.data.frame(dataf)) {
-    stop("Input 'dataf' must be a data frame.")
-  }
-  if (!is.list(test_groups) || is.null(names(test_groups))) {
-    stop("'test_groups' must be a named list of character vectors.")
-  }
-  if (!all(grouping_vars %in% colnames(dataf))) {
-    missing <- setdiff(grouping_vars, colnames(dataf))
-    stop("These grouping variables are missing from the data: ",
-         paste(missing, collapse = ", "))
+                                       filters = NULL, digits = 3, force = FALSE) {
+
+  # Validate test groups and get all test columns
+  all_tests <- .validate_test_groups(test_groups, dataf)
+
+  # Input validation using adRutils::validate_params
+  adRutils::validate_params(
+    data = dataf,
+    columns = c(grouping_vars, all_tests),  # Both grouping vars and test columns must exist
+    numeric_columns = all_tests,  # Test columns should be numeric
+    custom_checks = list(
+      list(condition = is.numeric(digits) && length(digits) == 1 && digits >= 0,
+           message = "digits must be a single non-negative number"),
+      list(condition = is.logical(force),
+           message = "force must be logical (TRUE/FALSE)"),
+      list(condition = is.null(filters) || is.list(filters),
+           message = "filters must be NULL or a named list")
+    ),
+    context = "create_adjusted_composites"
+  )
+
+  # Define expected outputs (z-scores and composite scores for each group)
+  expected_outputs <- c()
+  for (group_name in names(test_groups)) {
+    cols <- test_groups[[group_name]]
+    # Z-score columns
+    zscore_cols <- paste0("zscore_", cols, "_", group_name)
+    # Composite score column
+    composite_col <- paste0(group_name, "_comp_score")
+    expected_outputs <- c(expected_outputs, zscore_cols, composite_col)
   }
 
-  # Combine all test columns
-  all_tests <- unlist(test_groups)
-
-  # Check if test columns exist
-  missing_cols <- setdiff(all_tests, colnames(dataf))
-  if (length(missing_cols) > 0) {
-    stop("These test columns are missing from the data: ",
-         paste(missing_cols, collapse = ", "))
+  if (.should_skip_clinical_processing(dataf, "create_demographic_adjusted_composites", expected_outputs,
+                                       all_tests, force, TRUE)) {
+    return(dataf)
   }
 
-  # Check if these columns have already been processed
-  if (!force) {
-    adRutils::is_processed("create_demographic_adjusted_composites", all_tests, error_if_exists = TRUE)
-  }
+  # Display progress message
+  message("Creating demographic adjusted composite scores for ", length(test_groups), " test groups")
 
   # Apply filters if provided
   df <- dataf
@@ -119,8 +130,8 @@ create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
   result_df <- result_df %>%
     dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~round(., digits = digits)))
 
-  # Register these columns as processed
-  adRutils::register_processed("create_demographic_adjusted_composites", all_tests)
+  # Complete processing using shared helper
+  .complete_processing("create_demographic_adjusted_composites", all_tests, TRUE)
 
   return(result_df)
 }
@@ -158,45 +169,39 @@ create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
 #' @export
 sum_cognitive_test_components <- function(dataf, component_cols, result_col = "total_score",
                                           method = "sum", na.rm = TRUE, force = FALSE) {
-  # Input validation
-  if (!is.data.frame(dataf)) {
-    stop("Input 'dataf' must be a data frame.")
+
+  # Input validation using adRutils::validate_params
+  adRutils::validate_params(
+    data = dataf,
+    columns = component_cols,  # Component columns must exist
+    numeric_columns = component_cols,  # Component columns must be numeric
+    custom_checks = list(
+      list(condition = method %in% c("sum", "mean"),
+           message = "method must be one of: sum, mean"),
+      list(condition = is.logical(na.rm),
+           message = "na.rm must be logical (TRUE/FALSE)"),
+      list(condition = is.logical(force),
+           message = "force must be logical (TRUE/FALSE)"),
+      list(condition = is.character(result_col) && length(result_col) == 1,
+           message = "result_col must be a single character string")
+    ),
+    context = "sum_cognitive_test_components"
+  )
+
+  # Define expected outputs
+  expected_outputs <- c(result_col)
+
+  # Check if we should skip processing using shared helper
+  if (.should_skip_clinical_processing(dataf, "sum_cognitive_test_components", expected_outputs,
+                                       c(component_cols, result_col), force, TRUE)) {
+    return(dataf)
   }
 
-  # Check if columns exist
-  missing_cols <- component_cols[!component_cols %in% names(dataf)]
-  if (length(missing_cols) > 0) {
-    stop("The following columns do not exist in the data: ",
-         paste(missing_cols, collapse = ", "))
-  }
-
-  # Validate method
-  valid_methods <- c("sum", "mean")
-  if (!method %in% valid_methods) {
-    stop("Method must be one of: ", paste(valid_methods, collapse = ", "))
-  }
-
-  # Check column types
-  non_numeric <- character()
-  for (col in component_cols) {
-    if (!is.numeric(dataf[[col]])) {
-      non_numeric <- c(non_numeric, col)
-    }
-  }
-  if (length(non_numeric) > 0) {
-    stop("The following columns are not numeric: ", paste(non_numeric, collapse = ", "))
-  }
-
-  # Check if these columns have already been processed
-  if (!force) {
-    adRutils::is_processed("sum_cognitive_test_components",
-                            c(component_cols, result_col),
-                            error_if_exists = TRUE)
-  }
+  # Display progress message
+  message("Creating ", result_col, " using ", method, " of ", length(component_cols), " components")
 
   # Create the aggregate column
   result <- dataf
-
   if (method == "sum") {
     result <- result %>%
       dplyr::mutate(
@@ -215,9 +220,8 @@ sum_cognitive_test_components <- function(dataf, component_cols, result_col = "t
       )
   }
 
-  # Register these columns as processed
-  adRutils::register_processed("sum_cognitive_test_components",
-                                c(component_cols, result_col))
+  # Complete processing using shared helper
+  .complete_processing("sum_cognitive_test_components", c(component_cols, result_col), TRUE)
 
   return(result)
 }

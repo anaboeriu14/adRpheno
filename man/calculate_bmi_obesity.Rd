@@ -11,7 +11,7 @@ calculate_bmi_obesity(
   bmi_col,
   cutoff = 30,
   force = FALSE,
-  warn = TRUE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ calculate_bmi_obesity(
 
 \item{force}{Logical. If TRUE, recalculates even if outputs already exist (default: FALSE)}
 
-\item{warn}{Logical. If TRUE, shows informative messages (default: TRUE)}
+\item{verbose}{Logical. If TRUE, shows informative messages (default: TRUE)}
 }
 \value{
 Data frame with calculated BMI values and obesity classification

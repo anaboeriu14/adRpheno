@@ -11,7 +11,7 @@ calculate_egfr(
   sex_col,
   egfr_col = "eGFR",
   force = FALSE,
-  warn = TRUE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ calculate_egfr(
 
 \item{force}{Logical. If TRUE, recalculates even if eGFR already exists (default: FALSE)}
 
-\item{warn}{Logical. If TRUE, shows informative messages (default: TRUE)}
+\item{verbose}{Logical. If TRUE, shows informative messages (default: TRUE)}
 }
 \value{
 Data frame with added eGFR column
