@@ -9,7 +9,6 @@ compute_zscores(
   vars,
   prefix = "zscore_",
   group_vars = NULL,
-  remove_pattern = NULL,
   force = FALSE
 )
 }
@@ -22,8 +21,6 @@ compute_zscores(
 
 \item{group_vars}{Character vector. Optional grouping variables for group-wise standardization}
 
-\item{remove_pattern}{Character. Optional pattern to remove from variable names in output}
-
 \item{force}{Logical. If TRUE, bypasses the check for previous processing (default: FALSE)}
 }
 \value{
@@ -31,22 +28,4 @@ Data frame with added standardized variable columns
 }
 \description{
 Creates standardized (z-score) versions of numeric variables.
-Tracks processing to prevent duplicate standardization.
-}
-\examples{
-\dontrun{
-testD <- data.frame(
-  school_id = c(1, 1, -31, 13, 14, 45, 42, 15, 58, 45),
-  grade_univ = c("Freshman", "Sophomore", "Sophomore", "Senior", "Junior",
-                 "Senior", "Junior", "Sophomore", "Freshman", "Senior"),
-  age = c(18, 20, -20, 22, 21, 23, 20, 19, 17, 23),
-  score_math = c(165, 99, 110, 80, 210, 134, 78, 81, 90, 134),
-  score_verbal = c(114, 199, 98, 80, 156, 134, 67, 140, 85, 117))
-
-# Simple standardization
-standardize_variables(testD, c("score_math", "score_verbal"))
-
-# Group-wise standardization by grade
-standardize_variables(testD, c("score_math", "score_verbal"), group_vars = "grade_univ")
-}
 }

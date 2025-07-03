@@ -1,4 +1,4 @@
-# Internal helper to determine expected BP output columns based on user options
+# Determine expected BP output columns based on user options
 #' @keywords internal
 .get_expected_bp_outputs <- function(calculate_map, calculate_pp){
   base_output_cols <- c("avg_systolic_bp", "avg_diastolic_bp")
@@ -10,7 +10,7 @@
   c(base_output_cols, optional_output_cols)
 }
 
-# Internal helper to check if BP processing should be skipped
+# Check if BP processing should be skipped
 #' @keywords internal
 .should_skip_clinical_processing <- function(dataf, function_name, expected_outputs,
                                       required_cols, force, verbose = TRUE){
@@ -54,10 +54,10 @@
 #' @keywords internal
 .complete_processing <- function(function_name, required_cols, verbose = TRUE) {
   adRutils::register_processed(function_name, required_cols)
-  if (verbose) message(function_name, " calculation complete")
+  #if (verbose) message(function_name, " calculation complete")
 }
 
-# Helper function for test groups validation
+# Helper function for test group validation
 #' @keywords internal
 .validate_test_groups <- function(test_groups, dataf) {
   if (!is.list(test_groups) || is.null(names(test_groups))) {

@@ -22,4 +22,5 @@ Imports:
     utils,
     jsonlite,
     rxnorm,
-    httr
+    httr,
+    cli

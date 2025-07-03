@@ -161,7 +161,7 @@ calculate_bp_metrics <- function(dataf, systolic1, systolic2, diastolic1, diasto
   # compute avg_systolic_bp, avg_diastolic_bp
   result_df <- dataf %>%
     dplyr::mutate(
-      avg_systolic_bp = rowMeans(cbind(.data[[systolic1]], .data[[systolic2]]), na.rm = TRUE),,
+      avg_systolic_bp = rowMeans(cbind(.data[[systolic1]], .data[[systolic2]]), na.rm = TRUE),
       avg_diastolic_bp = rowMeans(cbind(.data[[diastolic1]], .data[[diastolic2]]), na.rm = TRUE)
     )
 

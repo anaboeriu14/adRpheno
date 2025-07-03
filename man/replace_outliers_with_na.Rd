@@ -20,8 +20,7 @@ replace_outliers_with_na(
 
 \item{multiplier}{Numeric. Multiplier for IQR in outlier detection (default: 1.5)}
 
-\item{paired_cols}{Named list. Optional pairing of transformed columns with original
-columns (e.g., list("log10_var" = "var"))}
+\item{paired_cols}{Named list. Optional pairing of transformed columns with original columns}
 
 \item{remove_all_na_rows}{Logical. If TRUE, removes rows where all specified variables are NA (default: TRUE)}
 
@@ -32,5 +31,4 @@ Data frame with outliers replaced by NA
 }
 \description{
 Identifies outliers in numeric variables and replaces them with NA.
-Tracks processing to prevent duplicate outlier removal.
 }

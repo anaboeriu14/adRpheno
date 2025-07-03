@@ -9,28 +9,22 @@ match_snp_genotype(
   rs7412_col,
   rs429358_col,
   genotype_col,
-  return_all = TRUE,
-  show_details = TRUE,
-  genotype_format = c("standard", "numeric", "slash")
+  return_all = TRUE
 )
 }
 \arguments{
-\item{dataf}{A data frame containing SNPs and genotypes as columns}
+\item{dataf}{A data frame containing SNPs and genotypes}
 
-\item{rs7412_col}{The name of the rs7412 SNP column}
+\item{rs7412_col}{Character. Name of the rs7412 SNP column}
 
-\item{rs429358_col}{The name of the rs429358 SNP column}
+\item{rs429358_col}{Character. Name of the rs429358 SNP column}
 
-\item{genotype_col}{The name of the genotype column to check}
+\item{genotype_col}{Character. Name of the genotype column}
 
-\item{return_all}{Logical, whether to return the entire dataset (default) or only mismatches}
-
-\item{show_details}{Logical, whether to include detailed columns in output (default: TRUE)}
-
-\item{genotype_format}{String indicating the format of the genotype column (default: "standard")}
+\item{return_all}{Logical. Return entire dataset or just mismatches (default: TRUE)}
 }
 \value{
-A data frame with validation results
+Data frame with validation results
 }
 \description{
 Match APOE SNPs to genotypes

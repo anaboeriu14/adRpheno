@@ -4,40 +4,20 @@
 \alias{validate_apoe_e4_status}
 \title{Validate APOE e4 carrier status}
 \usage{
-validate_apoe_e4_status(
-  dataf,
-  genotype,
-  e4_positive,
-  return_all = FALSE,
-  true_values = c(1, "1", "yes", "y", "true", "t"),
-  false_values = c(0, "0", "no", "n", "false", "f"),
-  genotype_format = c("standard", "numeric", "slash")
-)
+validate_apoe_e4_status(dataf, genotype, e4_positive, return_all = FALSE)
 }
 \arguments{
 \item{dataf}{A data frame containing APOE genotypes and e4 carrier status}
 
-\item{genotype}{The name of the APOE genotype column}
+\item{genotype}{Character. The name of the APOE genotype column}
 
-\item{e4_positive}{The name of the e4 carrier status column}
+\item{e4_positive}{Character. The name of the e4 carrier status column}
 
-\item{return_all}{Logical, if TRUE returns the entire dataset with a validation column (default: FALSE)}
-
-\item{true_values}{Vector of values that represent e4 positive status (default: c(1, "1", "yes", "y", "true", "t"))}
-
-\item{false_values}{Vector of values that represent e4 negative status (default: c(0, "0", "no", "n", "false", "f"))}
-
-\item{genotype_format}{String indicating the format of the genotype column. Options: "standard" (default: E2E3),
-"numeric" (e.g., 23, 34), or "slash" (e.g., e2/e3)}
+\item{return_all}{Logical. If TRUE returns entire dataset with validation column (default: FALSE)}
 }
 \value{
-If mismatches found and return_all=FALSE: returns a data frame of mismatched records
-If mismatches found and return_all=TRUE: returns the entire data frame with added 'standardized_genotype'
-and 'e4_status_valid' columns
-If no mismatches found: returns message "No mismatches found"
+Data frame with validation results or message if no mismatches
 }
 \description{
-Function uses these constants:
-VALID_APOE_GENOTYPES <- c("E2E2", "E2E3", "E2E4", "E3E3", "E3E4", "E4E4")
-E4_CARRIER_GENOTYPES <- c("E2E4", "E3E4", "E4E4")
+Validate APOE e4 carrier status
 }

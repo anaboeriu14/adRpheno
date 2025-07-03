@@ -4,30 +4,17 @@
 \alias{classify_apoe_risk_groups}
 \title{Classify APOE genotypes into risk groups}
 \usage{
-classify_apoe_risk_groups(
-  dataf,
-  genotype_col,
-  group_col = "apoe_risk_group",
-  na.rm = FALSE,
-  error_on_invalid = TRUE,
-  genotype_format = c("standard", "numeric", "slash")
-)
+classify_apoe_risk_groups(dataf, genotype_col, group_col = "apoe_risk_group")
 }
 \arguments{
 \item{dataf}{A data frame containing APOE genotype data}
 
-\item{genotype_col}{A character string with the name of the genotype column}
+\item{genotype_col}{Character. Name of the genotype column}
 
-\item{group_col}{The name to use for the new risk group column (default: "apoe_risk_group")}
-
-\item{na.rm}{Logical, whether to ignore NA values (default: FALSE)}
-
-\item{error_on_invalid}{Logical, whether to error on invalid genotypes (default: TRUE)}
-
-\item{genotype_format}{String indicating the format of the genotype column (default: "standard")}
+\item{group_col}{Character. Name for new risk group column (default: "apoe_risk_group")}
 }
 \value{
-A data frame with an additional factor column containing the APOE risk groups
+Data frame with added risk group column
 }
 \description{
 Classify APOE genotypes into risk groups
