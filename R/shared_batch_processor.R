@@ -2,6 +2,8 @@
 
 #' Unified batch processor for medication API calls
 #'
+#' Process items in batches with caching and progress tracking using adRutils cache
+#'
 #' @param items Character vector of items to process
 #' @param api_function Function that processes a single item
 #' @param batch_size Number of items per batch (default: 200)
@@ -10,15 +12,10 @@
 #' @param cache_dir Cache directory (default: "cache")
 #' @param max_age_days Cache expiration in days (default: 30)
 #' @param retry_count Retry attempts for failed calls (default: 3)
-#' @param retry_delay Seconds between retries (default: 1)
 #' @param batch_delay Seconds between batches (default: 2)
-#' @param return_cache Return cache instead of results (default: FALSE)
 #' @param process_type Description for progress messages (default: "items")
 #' @param ... Additional arguments passed to api_function
-#'
 #' @return Named list of results or cache object
-#' @noRd
-#' Process items in batches with caching and progress tracking using adRutils cache
 #' @keywords internal
 
 .process_batch <- function(items, api_function, batch_size = 200, save_freq = 50,

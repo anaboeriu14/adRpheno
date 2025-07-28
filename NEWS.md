@@ -1,3 +1,21 @@
+# adRpheno 0.3.0
+
+## New Features
+
+* Added `fit_group_models()` function for fitting linear models across multiple outcomes and groups
+  - Supports flexible covariate specifications with outcome-specific and group-specific adjustments
+  - Includes input validation using adRutils
+  - Returns tidy results with model objects, summaries, and diagnostics
+  - Useful for biomarker, cognitive, and neuroimaging analyses across ancestry groups
+
+## Changes
+
+* Created internal helper functions for better maintainability
+
+## Breaking Changes
+
+* None in this release
+
 # adRpheno 0.2.0
 
 ## New Features
