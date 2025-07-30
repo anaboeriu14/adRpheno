@@ -13,11 +13,11 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
-    adRutils (>= 0.2.0),
+    adRutils (>= 0.3.0),
     stats, dplyr,
     stringr, tidyr, utils,rlang,
-    jsonlite, rxnorm, httr,cli, broom,
-    glue, purrr
+    jsonlite, rxnorm, httr,cli, 
+    purrr
     
  
     
