@@ -63,7 +63,7 @@ categorize_drugs <- function(dataf, med_col, atc_col = NULL, categories,
   # Check ATC column if provided
   if (!is.null(atc_col)) {
     if (!atc_col %in% names(dataf)) {
-      stop("ATC column '", atc_col, "' not found in dataframe")
+      cli_abort("ATC column {atc_col} not found in dataframe")
     }
   }
 
@@ -88,6 +88,7 @@ categorize_drugs <- function(dataf, med_col, atc_col = NULL, categories,
 
       # Combine: 1 if either matches, 0 otherwise
       result_df[[col_name]] <- as.integer(med_match | atc_match)
+
     } else {
       # Check only medication names
       result_df[[col_name]] <- as.integer(med_match)
@@ -95,7 +96,7 @@ categorize_drugs <- function(dataf, med_col, atc_col = NULL, categories,
 
     # Report count
     count <- sum(result_df[[col_name]], na.rm = TRUE)
-    message("Found ", count, " ", category_name, " medications")
+    cli_alert_success("Found {count} {category_name} medications")
   }
 
   return(result_df)

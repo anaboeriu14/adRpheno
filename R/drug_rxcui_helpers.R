@@ -71,8 +71,7 @@
     result_df[[rxcui_column]] <- NA_character_
   } else {
     # Warn if column exists and will be overwritten
-    warning("Column '", rxcui_column, "' already exists and will be overwritten.",
-            call. = FALSE)
+    cli::cli_alert_warning("Column '{rxcui_column}' already exists and will be overwritten.")
   }
 
   return(result_df)
@@ -88,8 +87,7 @@
   valid_meds <- meds[!is.na(meds) & meds != ""]
   unique_meds <- unique(valid_meds)
 
-  message("Found ", length(unique_meds), " unique medications out of ",
-          length(valid_meds), " total valid entries")
+  cli::cli_alert_info("Found {length(unique_meds)} unique medications out of { length(valid_meds)} total valid entries ")
 
   return(list(
     unique_meds = unique_meds,
@@ -104,14 +102,13 @@
   found_count <- sum(!is.na(result_df[[rxcui_column]]))
   valid_count <- sum(!is.na(original_df[[med_column]]) & original_df[[med_column]] != "")
 
-  message("\n=== RxCUI RESULTS ===")
-  message("Method: ", method)
-  message("Coverage: ", found_count, "/", valid_count, " (",
-          round(found_count/valid_count*100, 1), "%)")
+  cli::cli_h2(col_cyan("RxCUI RESULTS"))
+  cli::cli_alert_info("Method {method}")
+  cli::cli_alert_info("Coverage: {found_count}/{valid_count} ( round(found_count/valid_count*100, 1)%)")
 
   elapsed <- difftime(Sys.time(), start_time, units = "mins")
-  message("Time: ", round(elapsed, 1), " minutes")
-  message("====================")
+  cli_alert_info("Time: {round(elapsed, 1)} minutes ")
+  cli_rule()
 }
 
 #' Null-coalescing operator

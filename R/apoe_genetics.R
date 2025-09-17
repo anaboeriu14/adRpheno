@@ -69,7 +69,6 @@ validate_apoe_e4_status <- function(dataf, genotype, e4_positive, return_all = F
 #' @export
 match_snp_genotype <- function(dataf, rs7412_col, rs429358_col, genotype_col, return_all = TRUE) {
 
-  # === STEP 1: Simple validation ===
   adRutils::validate_params(
     data = dataf,
     columns = c(rs7412_col, rs429358_col, genotype_col),
@@ -82,7 +81,7 @@ match_snp_genotype <- function(dataf, rs7412_col, rs429358_col, genotype_col, re
     context = "match_snp_genotype"
   )
 
-  # === STEP 2: Process SNPs and predict genotype ===
+  # Process SNPs & predict genotype
   result_df <- dataf
 
   # Just uppercase the SNPs
@@ -105,7 +104,6 @@ match_snp_genotype <- function(dataf, rs7412_col, rs429358_col, genotype_col, re
     NA
   )
 
-  # === STEP 4: Return results ===
   if (return_all) {
     return(result_df[c(names(dataf), "predicted_genotype", "genotype_match")])
   } else {
@@ -129,7 +127,6 @@ match_snp_genotype <- function(dataf, rs7412_col, rs429358_col, genotype_col, re
 #' @export
 classify_apoe_risk_groups <- function(dataf, genotype_col, group_col = "apoe_risk_group") {
 
-  # === STEP 1: Simple validation ===
   adRutils::validate_params(
     data = dataf,
     columns = genotype_col,
@@ -146,7 +143,7 @@ classify_apoe_risk_groups <- function(dataf, genotype_col, group_col = "apoe_ris
     context = "classify_apoe_risk_groups"
   )
 
-  # === STEP 2: Format and classify ===
+  # Format and classify
   result_df <- dataf
   formatted_genotypes <- .format_apoe_genotype(dataf[[genotype_col]])
 

@@ -51,7 +51,7 @@ calculate_bmi_obesity <- function(dataf, weight_col, height_col, bmi_col,
 
 
   # Display calculation message
-  if (verbose) message("Calculating BMI and obesity classification")
+  if (verbose) cli_alert_info("Calculating BMI and obesity classification")
 
   # Rename columns for clarity and calculate BMI
   modified_df <- dataf %>%
@@ -170,14 +170,14 @@ calculate_bp_metrics <- function(dataf, systolic1, systolic2, diastolic1, diasto
     result_df <- result_df %>%
       dplyr::mutate(mean_arterial_pressure = round(
         .data$avg_diastolic_bp + ((.data$avg_systolic_bp - .data$avg_diastolic_bp) / 3), decimal_places))
-    if (verbose) message("- Added column 'mean_arterial_pressure'")
+    if (verbose) cli_alert_info("Added column 'mean_arterial_pressure'")
   }
 
   # calculate pulse pressure
   if (calculate_pp) {
     result_df <- result_df %>%
       dplyr::mutate(pulse_pressure = round(.data$avg_systolic_bp - .data$avg_diastolic_bp,decimal_places))
-    if (verbose) message("- Added column 'pulse_pressure'")
+    if (verbose) cli_alert_info("Added column 'pulse_pressure'")
   }
 
   .complete_processing("calculate_bp_metrics", required_cols, verbose)
@@ -253,7 +253,7 @@ calculate_egfr <- function(dataf, creatinine_col, age_col, sex_col,
     return(dataf)
   }
 
-  if (verbose) message("Calculating eGFR using CKD-EPI 2021 formula")
+  if (verbose) cli_alert_info("Calculating eGFR using CKD-EPI 2021 formula")
 
   # Constants based on gender
   kappa <- ifelse(dataf[[sex_col]] == 1, 0.7, 0.9)        # kF for females, kM for males

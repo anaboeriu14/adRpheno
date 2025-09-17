@@ -17,19 +17,19 @@
 
   # Check if clinical calculations already exist (output-based check)
   if (all(expected_outputs %in% names(dataf)) && !force) {
-    if (verbose) message(function_name, " already completed. Use force=TRUE to recalculate.")
+    if (verbose) cli_alert_info("{function_name} already completed. Use force=TRUE to recalculate.")
     return(TRUE)
   }
 
   # Function-specific processing check (only if not forcing)
   already_processed <- !force && adRutils::is_processed(function_name, required_cols, error_if_exists = FALSE)
   if (already_processed) {
-    if (verbose) message(function_name, " processing markers detected. Use force=TRUE to override.")
+    if (verbose) cli_alert_info(" {function_name} processing markers detected. Use force=TRUE to override.")
     return(TRUE)
   }
 
    if (all(expected_outputs %in% names(dataf)) && force && verbose) {
-    message("Recalculating ",function_name, " (force = TRUE)")
+     cli_alert_info("Recalculating {function_name} (force = TRUE)")
    }
   return(FALSE)
 }
@@ -44,9 +44,7 @@
     if (calculate_pp) "Pulse Pressure (PP)"
   )
 
-  message(paste0("Calculating average BP values",
-                 if(length(calculations) > 0) " and ",
-                 paste(calculations, collapse = ", ")))
+  cli_alert_info("Calculating average BP values{if(length(calculations) > 0) paste0(' and ', paste(calculations, collapse = ', '))}")
 }
 
 
@@ -54,24 +52,23 @@
 #' @keywords internal
 .complete_processing <- function(function_name, required_cols, verbose = TRUE) {
   adRutils::register_processed(function_name, required_cols)
-  #if (verbose) message(function_name, " calculation complete")
+  if (verbose) cli_alert_info(" {function_name} calculation complete")
 }
 
 # Helper function for test group validation
 #' @keywords internal
 .validate_test_groups <- function(test_groups, dataf) {
   if (!is.list(test_groups) || is.null(names(test_groups))) {
-    stop("'test_groups' must be a named list of character vectors.")
+    cli_abort("{.arg test_groups} must be a named list of character vectors.")
   }
 
   # Combine all test columns and check they exist
   all_tests <- unlist(test_groups)
   missing_cols <- setdiff(all_tests, colnames(dataf))
-  if (length(missing_cols) > 0) {
-    stop("These test columns are missing from the data: ",
-         paste(missing_cols, collapse = ", "))
-  }
 
+  if (length(missing_cols) > 0) {
+    cli_abort("These test columns are missing from the data: { paste(missing_cols, collapse = ", ")}")
+  }
   return(all_tests)
 }
 

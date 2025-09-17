@@ -79,8 +79,7 @@
   valid_rxcuis <- rxcuis[!is.na(rxcuis)]
   unique_rxcuis <- unique(as.character(valid_rxcuis))
 
-  message("Found ", length(unique_rxcuis), " unique RxCUIs out of ",
-          length(valid_rxcuis), " total valid entries")
+  cli::cli_alert_info("Found {length(unique_rxcuis)} unique RxCUIs out of {length(valid_rxcuis)} total valid entries")
 
   return(list(
     unique_rxcuis = unique_rxcuis,
@@ -145,8 +144,8 @@
   found_count <- sum(!is.na(result_df[[new_col_name]]))
   coverage_pct <- round(found_count / total_rows * 100, 1)
 
-  message("\n=== ATC2 RESULTS ===")
-  message("Coverage: ", found_count, "/", total_rows, " (", coverage_pct, "%)")
+  cli::cli_h2(cli::col_cyan("ATC2 RESULTS"))
+  cli_alert_info("Coverage: {found_count}/{total_rows} ({coverage_pct}%)")
 
   # Show most common ATC2 classes
   if (found_count > 0) {
@@ -164,11 +163,12 @@
     class_counts <- table(all_classes)
     top_classes <- head(sort(class_counts, decreasing = TRUE), 5)
 
-    message("Top ATC2 classes found:")
+    cli::cli_alert_info("Top ATC2 classes found:")
+    cli::cli_ul()
     for (i in seq_along(top_classes)) {
-      message("  ", names(top_classes)[i], ": ", top_classes[i], " medications")
+      cli::cli_li("{cli::col_blue(names(top_classes)[i])}: {top_classes[i]} medications")
     }
+    cli::cli_end()
   }
-
-  message("===================")
+  cli::cli_rule()
 }

@@ -48,20 +48,21 @@ add_atc2_classification <- function(dataf,
 
   # === STEP 2: Check for existing column ===
   if (new_col_name %in% names(dataf)) {
-    warning("Column '", new_col_name, "' already exists and will be overwritten.",
-            call. = FALSE)
+    cli_alert_warning("Column '{new_col_name}' already exists and will be overwritten.")
   }
 
   # === STEP 3: Get unique RxCUIs to process ===
   rxcui_info <- .get_unique_rxcuis(dataf, rxcui_col)
 
   if (rxcui_info$count == 0) {
-    warning("No valid RxCUIs found in the data frame")
+    cli_alert_warning("No valid RxCUIs found in the data frame")
     dataf[[new_col_name]] <- NA_character_
     return(dataf)
   }
 
   # === STEP 4: Process RxCUIs using batch processor with CLI progress ===
+  cli::cli_alert_info("Processing {rxcui_info$count} unique RxCUIs for ATC2 classifications...")
+
   rxcui_to_atc2 <- .process_batch(
     items = rxcui_info$unique_rxcuis,
     api_function = rxnorm::get_atc,
@@ -79,13 +80,12 @@ add_atc2_classification <- function(dataf,
   # === STEP 5: Apply results based on nesting option ===
   if (unnest) {
     result_df <- .apply_atc2_unnested(dataf, rxcui_col, new_col_name, rxcui_to_atc2)
-    message("Created unnested data frame with ", nrow(result_df) - nrow(dataf),
-            " additional rows for multiple ATC2 classifications")
+    cli::cli_alert_success("Created unnested data frame with {nrow(result_df) - nrow(dataf)} additional rows for multiple ATC2 classifications")
   } else {
     result_df <- .apply_atc2_nested(dataf, rxcui_col, new_col_name, rxcui_to_atc2)
     multi_class_count <- sum(grepl(";", result_df[[new_col_name]]), na.rm = TRUE)
     if (multi_class_count > 0) {
-      message(multi_class_count, " medications have multiple ATC2 classifications (combined with ';')")
+      cli::cli_alert_info("{multi_class_count} medications have multiple ATC2 classifications (combined with ';')")
     }
   }
 

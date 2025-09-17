@@ -23,10 +23,10 @@ get_single_rxcui <- function(med_name, method = "exact", retry_count = 3) {
 
   # Simple validation for single function
   if (!is.character(med_name) || length(med_name) != 1) {
-    stop("med_name must be a single character string")
+    cli_abort("{.arg med_name} must be a single character string")
   }
   if (!method %in% c("exact", "approximate")) {
-    stop("method must be 'exact' or 'approximate'")
+    cli_abort("method must be 'exact' or 'approximate'")
   }
   if (is.na(med_name) || med_name == "") {
     return(NA_character_)
@@ -61,7 +61,7 @@ get_single_rxcui <- function(med_name, method = "exact", retry_count = 3) {
       }
     }, error = function(e) {
       if (attempt == retry_count) {
-        message("Error processing '", med_name, "': ", e$message)
+        cli_alert_danger("Failed to process '", med_name, "': ", e$message)
       }
       NA_character_
     })
@@ -76,7 +76,6 @@ get_single_rxcui <- function(med_name, method = "exact", retry_count = 3) {
       Sys.sleep(1)
     }
   }
-
   return(NA_character_)
 }
 
@@ -134,12 +133,12 @@ add_rxcuis <- function(dataf,
   medication_info <- .get_unique_medications(dataf, med_column)
 
   if (medication_info$count == 0) {
-    message("No valid medication names found")
+    cli_alert_warning("No valid medication names found")
     return(result_df)
   }
 
   # === STEP 4: Process medications using unified batch processor ===
-  message("Processing ", medication_info$count, " unique medications...")
+  cli_alert_info("Processing {medication_info$count} unique medications...")
 
   cache_name <- paste0("rxcui_", method, "_cache")
 
