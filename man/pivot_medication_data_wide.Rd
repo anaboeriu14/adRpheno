@@ -23,7 +23,7 @@ pivot_medication_data_wide(
 \item{medication_col}{Character. Name of the column containing medication names/values}
 
 \item{position_col}{Character. Name of the column containing position identifiers
-(e.g., "medication_1_name", "medication_2_name"). Default is "medication_position"}
+(e.g., "medication_1_name", "medication_2_name"). Default is "question_col"}
 
 \item{category_cols}{Character vector. Names of binary indicator columns to include
 in wide format (optional). These will be numbered sequentially (e.g., "is_diabetes_med_1")}

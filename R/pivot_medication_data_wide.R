@@ -9,7 +9,7 @@
 #' @param id_col Character. Name of the ID column identifying participants
 #' @param medication_col Character. Name of the column containing medication names/values
 #' @param position_col Character. Name of the column containing position identifiers
-#'   (e.g., "medication_1_name", "medication_2_name"). Default is "medication_position"
+#'   (e.g., "medication_1_name", "medication_2_name"). Default is "question_col"
 #' @param category_cols Character vector. Names of binary indicator columns to include
 #'   in wide format (optional). These will be numbered sequentially (e.g., "is_diabetes_med_1")
 #' @param max_meds Integer. Maximum number of medication positions to include per
