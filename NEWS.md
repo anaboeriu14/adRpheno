@@ -1,3 +1,21 @@
+# adRpheno 0.3.0
+
+## New Features
+
+### Medication Data Transformation
+- `create_wide_medication_matrix()` - Transform long medication data to wide format with position preservation
+  - Maintains original questionnaire positions (medication_1_name → new_medication_1_name)
+  - Supports binary category indicators with separate naming conventions
+  - Includes all participants even those without medication data
+  - User defined prefixes & maximum medication limits
+
+## Improvements
+- Enhanced medication processing workflow with standardized wide format transformation
+- Added informative CLI messages during processing to track progress
+
+## Breaking Changes
+- None
+
 # adRpheno 0.2.0
 
 ## New Features

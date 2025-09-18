@@ -1,7 +1,7 @@
 
 # adRpheno
 
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/anaboeriu14/adRpheno/releases) [![adRutils Dependency](https://img.shields.io/badge/adRutils-%3E%3D%200.3.0-blue.svg)](https://github.com/anaboeriu14/adRutils)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](https://github.com/anaboeriu14/adRpheno/releases) [![adRutils Dependency](https://img.shields.io/badge/adRutils-0.4.0-blue.svg)](https://github.com/anaboeriu14/adRutils)
 
 Tools for Alzheimer's Disease Endophenotype Analysis
 
@@ -11,11 +11,7 @@ Tools for Alzheimer's Disease Endophenotype Analysis
 The package focuses on biomarker Z-score standardization, clinical measurement calculations, cognitive testing,
 and genetic data verification
 
-## Version Information
-
-**Current version:** 0.2.0
-
-See [Releases](https://github.com/anaboeriu14/adRpheno/releases) for detailed change log and release notes.
+See [NEWS.md](NEWS.md) for detailed changelong and [Releases](https://github.com/anaboeriu14/adRpheno/releases) for release notes.
 
 ## Installation
 
@@ -51,34 +47,14 @@ devtools::install_github("anaboeriu14/adRpheno")
 
 This package provides specialized tools for Alzheimer's Disease endophenotype analysis:
 
-All functions feature caching and progress tracking for efficient usage
+- **Biomarker Processing**: Outlier detection, standardization, and variable merging
+- **Clinical Calculations**: eGFR, BMI, blood pressure, and other clinical metrics  
+- **Cognitive Assessment**: Demographic adjustments and composite scoring
+- **Genetic Data**: APOE genotype validation and risk classification
+- **Medication Processing**: RxNorm integration, therapeutic classification, and data transformation
 
-### Biomarker Processing
-
--   `detect_outlier_thresholds()`: Calculate lower and upper bounds for outlier detection using IQR method
--   `replace_outliers_with_na()`: Identify outliers in numeric variables and replace them with NA
--   `z_score()`: Create standardized z-scores of variables with optional group-wise standardization
--   `coalesce_variables()`: Combine related variables from different time points or sources into single variables
-
-### Clinical Calculations
-
--   `calculate_egfr()`: Calculate estimated Glomerular Filtration Rate (eGFR) using the CKD-EPI formula
--   `calculate_bmi_obesity()`: Calculate BMI and classify obesity status
--   `calculate_bp_metrics()`: Calculate blood pressure metrics including Mean Arterial Pressure (MAP) and Pulse Pressure
-
-### Cognitive Assessment
-
--   `create_demographic_adjusted_composites()`: Compute z-scores adjusted for demographic factors and calculate composite scores
--   `sum_cognitive_test_components()`: Calculate total scores from multiple test components using sum or mean methods
-
-### Genetic Data
--   `validate_apoe_e4_status()`: Validate APOE e4 carrier status against genotype
--   `match_snp_genotype()`: Match APOE SNPs (rs7412, rs429358) to expected genotypes
--   `classify_apoe_risk_groups()`: Classify APOE genotypes into risk groups (e2+, e3/e3, e4+)
-
-### Medication Data Processing
-- `add_rxcuis()` - Get RxCUI identifiers for medication names using RxNorm API with caching
-- `add_atc2_classification()` - Add ATC2 therapeutic classifications to medications
+All functions feature caching and progress tracking for efficient usage. 
+See function documentation for complete details on available methods.
 
 ## Dependencies
 

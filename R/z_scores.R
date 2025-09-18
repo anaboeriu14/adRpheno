@@ -13,7 +13,6 @@
 compute_zscores <- function(dataf, vars, prefix = "zscore_",
                             group_vars = NULL, force = FALSE) {
 
-  # === STEP 1: Simple validation ===
   adRutils::validate_params(
     data = dataf,
     columns = vars,
@@ -22,11 +21,11 @@ compute_zscores <- function(dataf, vars, prefix = "zscore_",
     custom_checks = list(
       list(
         condition = is.character(prefix) && length(prefix) == 1,
-        message = "prefix must be a single character string"
+        message = "{.arg prefix} must be a single character string"
       ),
       list(
         condition = is.logical(force) && length(force) == 1,
-        message = "force must be TRUE or FALSE"
+        message = "{.arg force} must be TRUE or FALSE"
       )
     ),
     context = "compute_zscores"
@@ -38,6 +37,11 @@ compute_zscores <- function(dataf, vars, prefix = "zscore_",
   }
 
   # === STEP 3: Standardize variables ===
+  if (is.null(group_vars)) {
+    cli::cli_alert_info("Standardizing {length(vars)} variables")
+  } else {
+    cli::cli_alert_info("Standardizing {length(vars)} variables by {length(group_vars)} grouping variable{?s}")
+  }
   result_df <- dataf
 
   if (is.null(group_vars)) {
@@ -60,7 +64,7 @@ compute_zscores <- function(dataf, vars, prefix = "zscore_",
 
   # === STEP 4: Complete ===
   adRutils::register_processed("standardize_variables", vars)
-  message("Standardization complete (", length(vars), " variables processed)")
+  cli_alert_success("Standardization complete ({length(vars)}), variables processed")
 
   return(result_df)
 }

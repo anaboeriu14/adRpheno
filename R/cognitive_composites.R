@@ -43,18 +43,17 @@ create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
   # Validate test groups and get all test columns
   all_tests <- .validate_test_groups(test_groups, dataf)
 
-  # Input validation using adRutils::validate_params
   adRutils::validate_params(
     data = dataf,
-    columns = c(grouping_vars, all_tests),  # Both grouping vars and test columns must exist
-    numeric_columns = all_tests,  # Test columns should be numeric
+    columns = c(grouping_vars, all_tests),
+    numeric_columns = all_tests,
     custom_checks = list(
       list(condition = is.numeric(digits) && length(digits) == 1 && digits >= 0,
-           message = "digits must be a single non-negative number"),
+           message = "{.arg digits} must be a single non-negative number"),
       list(condition = is.logical(force),
-           message = "force must be logical (TRUE/FALSE)"),
+           message = "{.arg force} must be logical (TRUE/FALSE)"),
       list(condition = is.null(filters) || is.list(filters),
-           message = "filters must be NULL or a named list")
+           message = "{.arg filters} must be NULL or a named list")
     ),
     context = "create_adjusted_composites"
   )
@@ -75,8 +74,8 @@ create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
     return(dataf)
   }
 
-  # Display progress message
-  message("Creating demographic adjusted composite scores for ", length(test_groups), " test groups")
+  cli::cli_alert_info("Creating demographic adjusted composite scores for {length(test_groups)} test groups")
+
 
   # Apply filters if provided
   df <- dataf
@@ -88,8 +87,7 @@ create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
   }
 
   # Create grouping specification
-  grp_expr <- paste0("df %>% dplyr::group_by(",
-                     paste(grouping_vars, collapse = ", "), ")")
+  grp_expr <- paste0("df %>% dplyr::group_by(", paste(grouping_vars, collapse = ", "), ")")
   grouped_df <- eval(parse(text = grp_expr))
 
   # Calculate z-scores for each test group
@@ -171,19 +169,19 @@ sum_cognitive_test_components <- function(dataf, component_cols, result_col = "t
                                           method = "sum", na.rm = TRUE, force = FALSE) {
 
   # Input validation using adRutils::validate_params
-  adRutils::validate_params(
+   adRutils::validate_params(
     data = dataf,
-    columns = component_cols,  # Component columns must exist
-    numeric_columns = component_cols,  # Component columns must be numeric
+    columns = component_cols,
+    numeric_columns = component_cols,
     custom_checks = list(
       list(condition = method %in% c("sum", "mean"),
-           message = "method must be one of: sum, mean"),
+           message = "{.arg method} must be one of: sum, mean"),
       list(condition = is.logical(na.rm),
-           message = "na.rm must be logical (TRUE/FALSE)"),
+           message = "{.arg na.rm} must be logical (TRUE/FALSE)"),
       list(condition = is.logical(force),
-           message = "force must be logical (TRUE/FALSE)"),
+           message = "{.arg force} must be logical (TRUE/FALSE)"),
       list(condition = is.character(result_col) && length(result_col) == 1,
-           message = "result_col must be a single character string")
+           message = "{.arg result_col} must be a single character string")
     ),
     context = "sum_cognitive_test_components"
   )
@@ -198,7 +196,7 @@ sum_cognitive_test_components <- function(dataf, component_cols, result_col = "t
   }
 
   # Display progress message
-  message("Creating ", result_col, " using ", method, " of ", length(component_cols), " components")
+  cli::cli_alert_info("Creating {result_col} using {method} of {length(component_cols)} components")
 
   # Create the aggregate column
   result <- dataf

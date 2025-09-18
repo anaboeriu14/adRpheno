@@ -137,7 +137,7 @@ add_rxcuis <- function(dataf,
     return(result_df)
   }
 
-  # === STEP 4: Process medications using unified batch processor ===
+  #Process medications using unified batch processor
   cli_alert_info("Processing {medication_info$count} unique medications...")
 
   cache_name <- paste0("rxcui_", method, "_cache")
@@ -156,7 +156,7 @@ add_rxcuis <- function(dataf,
     method = method
   )
 
-  # === STEP 5: Apply results back to original data frame ===
+  # Apply results back to original data frame ===
   result_df[[rxcui_column]] <- rxcui_results[result_df[[med_column]]]
 
   # === STEP 6: Report results and return ===

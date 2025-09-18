@@ -12,7 +12,6 @@
 #' @export
 detect_outlier_thresholds <- function(dataf, var_name, multiplier = 1.5, label = NULL) {
 
-  # === STEP 1: Simple validation ===
   adRutils::validate_params(
     data = dataf,
     columns = var_name,
@@ -20,7 +19,7 @@ detect_outlier_thresholds <- function(dataf, var_name, multiplier = 1.5, label =
     custom_checks = list(
       list(
         condition = is.numeric(multiplier) && multiplier > 0,
-        message = "multiplier must be a positive number"
+        message = "{.arg multiplier} must be a positive number"
       )
     ),
     context = "detect_outlier_thresholds"
@@ -59,37 +58,35 @@ replace_outliers_with_na <- function(dataf, var_names, multiplier = 1.5,
                                      paired_cols = NULL, remove_all_na_rows = TRUE,
                                      force = FALSE) {
 
-  # === STEP 1: Simple validation ===
   adRutils::validate_params(
     data = dataf,
     columns = var_names,
     custom_checks = list(
       list(
         condition = is.numeric(multiplier) && multiplier > 0,
-        message = "multiplier must be a positive number"
+        message = "{.arg multiplier} must be a positive number"
       ),
       list(
         condition = is.logical(remove_all_na_rows) && length(remove_all_na_rows) == 1,
-        message = "remove_all_na_rows must be TRUE or FALSE"
+        message = "{.arg remove_all_na_rows} must be TRUE or FALSE"
       ),
       list(
         condition = is.logical(force) && length(force) == 1,
-        message = "force must be TRUE or FALSE"
+        message = "{.arg force} must be TRUE or FALSE"
       ),
       list(
         condition = is.null(paired_cols) || is.list(paired_cols),
-        message = "paired_cols must be NULL or a named list"
+        message = "{.arg paired_cols} must be NULL or a named list"
       )
     ),
     context = "replace_outliers_with_na"
   )
 
   # === STEP 2: Check processing history ===
-  if (!force) {
-    adRutils::is_processed("replace_outliers_with_na", var_names, error_if_exists = TRUE)
-  }
+  if (!force) adRutils::is_processed("replace_outliers_with_na", var_names, error_if_exists = TRUE)
 
-  # === STEP 3: Process each variable ===
+  cli::cli_alert_info("Processing {length(var_names)} variables for outlier removal...")
+
   result_df <- dataf
   processed_vars <- character()
   total_outliers <- 0  # Track total outliers removed
@@ -97,7 +94,7 @@ replace_outliers_with_na <- function(dataf, var_names, multiplier = 1.5,
   for (var in var_names) {
     # Skip non-numeric columns
     if (!is.numeric(result_df[[var]])) {
-      warning("Skipping non-numeric column: ", var, call. = FALSE)
+      cli::cli_alert_warning("Skipping non-numeric column: {var}")
       next
     }
 
@@ -119,9 +116,8 @@ replace_outliers_with_na <- function(dataf, var_names, multiplier = 1.5,
     }
 
     # Track progress
-    n_outliers <- sum(outliers)
-    total_outliers <- total_outliers + n_outliers
-    processed_vars <- c(processed_vars, var)  # FIXED: Add variable to processed list
+    total_outliers <- total_outliers + sum(outliers)
+    processed_vars <- c(processed_vars, var)
   }
 
   # === STEP 4: Remove all-NA rows if requested ===
@@ -130,8 +126,7 @@ replace_outliers_with_na <- function(dataf, var_names, multiplier = 1.5,
     n_removed <- sum(all_na_rows)
 
     if (n_removed > 0) {
-      message(sprintf("Removing %d rows with all NAs (%.1f%%)",
-                      n_removed, 100 * n_removed / nrow(result_df)))
+      cli::cli_alert_info("Removing {n_removed} rows with all NAs ({round(100 * n_removed / nrow(result_df), 1)}%)")
       result_df <- result_df[!all_na_rows, ]
     }
   }
@@ -142,11 +137,10 @@ replace_outliers_with_na <- function(dataf, var_names, multiplier = 1.5,
 
     # Show summary instead of individual messages
     if (total_outliers > 0) {
-      message("Removed ", total_outliers, " outliers across ", length(processed_vars), " variables")
+      cli::cli_alert_success("Removed {total_outliers} outliers across {length(processed_vars)} variables")
     }
-    message("Outlier removal complete (", length(processed_vars), " variables processed)")
+    cli::cli_alert_success("Outlier removal complete ({length(processed_vars)} variables processed)")
   }
-
   return(result_df)
 }
 

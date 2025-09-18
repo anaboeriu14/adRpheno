@@ -11,20 +11,19 @@
 #' @export
 validate_apoe_e4_status <- function(dataf, genotype, e4_positive, return_all = FALSE) {
 
-  # === STEP 1: validation ===
   adRutils::validate_params(
     data = dataf,
     columns = c(genotype, e4_positive),
     custom_checks = list(
       list(
         condition = is.logical(return_all) && length(return_all) == 1,
-        message = "return_all must be TRUE or FALSE"
+        message = "{.arg return_all} must be TRUE or FALSE"
       )
     ),
     context = "validate_apoe_e4_status"
   )
 
-  # === STEP 2: Standardize inputs ===
+  # Standardize inputs
   result_df <- dataf
 
   # Simple genotype formatting
@@ -33,14 +32,14 @@ validate_apoe_e4_status <- function(dataf, genotype, e4_positive, return_all = F
   # Simple e4 status parsing (handles common TRUE/FALSE representations)
   result_df$e4_status <- .parse_e4_status_simple(dataf[[e4_positive]])
 
-  # === STEP 3: Check for mismatches ===
+  # Check for mismatches
   result_df$expected_e4 <- result_df$formatted_genotype %in% E4_CARRIER_GENOTYPES
   result_df$e4_status_valid <- result_df$e4_status == result_df$expected_e4
 
   # Find mismatches (excluding NAs)
   mismatches <- which(!result_df$e4_status_valid & !is.na(result_df$e4_status_valid))
 
-  # === STEP 4: Return results ===
+  # Return results
   if (length(mismatches) > 0) {
     if (return_all) {
       return(result_df[c(names(dataf), "formatted_genotype", "e4_status_valid")])
@@ -75,7 +74,7 @@ match_snp_genotype <- function(dataf, rs7412_col, rs429358_col, genotype_col, re
     custom_checks = list(
       list(
         condition = is.logical(return_all) && length(return_all) == 1,
-        message = "return_all must be TRUE or FALSE"
+        message = "{.arg return_all} must be TRUE or FALSE"
       )
     ),
     context = "match_snp_genotype"
@@ -133,11 +132,11 @@ classify_apoe_risk_groups <- function(dataf, genotype_col, group_col = "apoe_ris
     custom_checks = list(
       list(
         condition = is.character(group_col) && length(group_col) == 1,
-        message = "group_col must be a single character string"
+        message = "{.arg group_col} must be a single character string"
       ),
       list(
         condition = !group_col %in% names(dataf),
-        message = paste0("Column '", group_col, "' already exists")
+        message = "Column {group_col} already exists"
       )
     ),
     context = "classify_apoe_risk_groups"
@@ -157,6 +156,11 @@ classify_apoe_risk_groups <- function(dataf, genotype_col, group_col = "apoe_ris
   # Convert to factor with proper levels
   result_df[[group_col]] <- factor(result_df[[group_col]],
                                    levels = c("e3/e3", "e2+", "e4+"))
+
+  classified_count <- sum(!is.na(result_df[[group_col]]))
+  if (classified_count > 0) {
+    cli::cli_alert_success("Classified {classified_count} APOE risk groups")
+  }
 
   return(result_df)
 }

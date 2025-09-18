@@ -4,7 +4,7 @@
 \alias{.process_one_batch}
 \title{Process a single batch with retry logic}
 \usage{
-.process_one_batch(batch, api_function, retry_count, ...)
+.process_one_batch(batch, api_function, retry_count, pb_id, ...)
 }
 \description{
 Process a single batch with retry logic

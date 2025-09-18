@@ -54,8 +54,8 @@ E4_CARRIER_GENOTYPES <- c("E2E4", "E3E4", "E4E4")
   for (i in seq_along(rs7412)) {
     if (is.na(rs7412[i]) || is.na(rs429358[i])) next
 
-    # Direct mapping - keeping it simple for beginners
-    snp_combo <- paste(rs7412[i], rs429358[i], sep = "_")
+    # Direct mapping
+    snp_combo <- paste(toupper(rs7412[i]), toupper(rs429358[i]), sep = "_")
 
     result[i] <- switch(snp_combo,
                         "TT_TT" = "E2E2",
@@ -66,7 +66,6 @@ E4_CARRIER_GENOTYPES <- c("E2E4", "E3E4", "E4E4")
                         NA_character_  # Any other combination
     )
   }
-
   return(result)
 }
 
