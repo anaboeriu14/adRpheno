@@ -1,9 +1,7 @@
 #' Transform long medication data to wide format with position preservation
 #'
 #' Converts medication data from long format to wide format while preserving original
-#' medication positions and optionally including binary medication category indicators.
-#' Useful for creating analysis-ready datasets where each medication occupies
-#' a specific column position corresponding to its original questionnaire position.
+#' medication positions and providing the option to include binary medication category indicators.
 #'
 #' @param dataf Data frame in long format containing medication data
 #' @param id_col Character. Name of the ID column identifying participants
@@ -20,7 +18,7 @@
 #'
 #' @return Data frame in wide format with:
 #'   \itemize{
-#'     \item One row per participant (identified by id col)
+#'     \item One row per participant
 #'     \item Medication columns named with med_prefix + original position column values
 #'     \item Category columns (if specified) named with category name + position number
 #'     \item All participants included, even those without medication data

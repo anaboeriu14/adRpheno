@@ -39,7 +39,7 @@ which transforms "medication_1_name" to "new_medication_1_name"}
 \value{
 Data frame in wide format with:
 \itemize{
-\item One row per participant (identified by id col)
+\item One row per participant
 \item Medication columns named with med_prefix + original position column values
 \item Category columns (if specified) named with category name + position number
 \item All participants included, even those without medication data
@@ -47,9 +47,7 @@ Data frame in wide format with:
 }
 \description{
 Converts medication data from long format to wide format while preserving original
-medication positions and optionally including binary medication category indicators.
-Useful for creating analysis-ready datasets where each medication occupies
-a specific column position corresponding to its original questionnaire position.
+medication positions and providing the option to include binary medication category indicators.
 }
 \details{
 Function preserves the original positioning of medications by extracting position
