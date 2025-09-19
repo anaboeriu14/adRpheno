@@ -104,7 +104,7 @@
 
   cli::cli_h2(col_cyan("RxCUI RESULTS"))
   cli::cli_alert_info("Method {method}")
-  cli::cli_alert_info("Coverage: {found_count}/{valid_count} ( round(found_count/valid_count*100, 1)%)")
+  cli::cli_alert_info("Coverage: {found_count}/{valid_count} ({round(found_count/valid_count*100, 1)}%)")
 
   elapsed <- difftime(Sys.time(), start_time, units = "mins")
   cli_alert_info("Time: {round(elapsed, 1)} minutes ")

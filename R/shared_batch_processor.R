@@ -1,5 +1,3 @@
-
-
 #' Unified batch processor for medication API calls
 #'
 #' Process items in batches with caching and progress tracking using adRutils cache
@@ -98,7 +96,15 @@
 
   cli_alert_success("Processing complete: {length(items_to_process)} new {process_type} processed")
 
-  return(cache_results[items])
+  final_results <- sapply(cache_results[items], function(x) {
+    if (is.list(x) && length(x) == 1) {
+      return(as.character(x[[1]]))
+    } else {
+      return(as.character(x))
+    }
+  })
+
+  return(final_results)
 }
 
 #' Process a single batch with retry logic

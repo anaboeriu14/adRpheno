@@ -139,12 +139,14 @@
 
 #' Report ATC2 processing results
 #' @noRd
-.report_atc2_results <- function(result_df, new_col_name) {
+.report_atc2_results <- function(result_df, new_col_name, start_time = NULL) {
+
   total_rows <- nrow(result_df)
   found_count <- sum(!is.na(result_df[[new_col_name]]))
   coverage_pct <- round(found_count / total_rows * 100, 1)
 
   cli::cli_h2(cli::col_cyan("ATC2 RESULTS"))
+  cli_alert_info("Method: ATC2 lookup")
   cli_alert_info("Coverage: {found_count}/{total_rows} ({coverage_pct}%)")
 
   # Show most common ATC2 classes
@@ -170,5 +172,10 @@
     }
     cli::cli_end()
   }
-  cli::cli_rule()
+
+  if (!is.null(start_time)) {
+    elapsed <- difftime(Sys.time(), start_time, units = "mins")
+    cli_alert_info("Time: {round(elapsed, 1)} minutes")
+  }
+  cli_rule()
 }

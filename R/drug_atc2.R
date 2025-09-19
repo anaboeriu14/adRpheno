@@ -41,7 +41,9 @@ add_atc2_classification <- function(dataf,
                                     retry_count = 3,
                                     batch_delay = 2) {
 
-  # === STEP 1: Validate inputs ===
+
+  start_time <- Sys.time()
+
   .validate_atc2_inputs(dataf, rxcui_col, new_col_name, unnest,
                         batch_size, save_freq, cache_dir, max_age_days,
                         retry_count, batch_delay)
@@ -90,7 +92,7 @@ add_atc2_classification <- function(dataf,
   }
 
   # === STEP 6: Report results ===
-  .report_atc2_results(result_df, new_col_name)
+  .report_atc2_results(result_df, new_col_name, start_time)
 
   return(result_df)
 }
