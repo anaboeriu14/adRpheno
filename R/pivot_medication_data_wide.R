@@ -164,6 +164,23 @@ pivot_medication_data_wide <- function(dataf,
   # Ensure all participants are included
   all_ids <- dataf %>% distinct(.data[[id_col]])
 
+  if (!is.null(category_cols)) {
+    for (cat_col in category_cols) {
+      cat_pattern <- paste0("^", cat_col, "_")
+      cat_columns <- grep(cat_pattern, names(result), value = TRUE)
+
+      if (length(cat_columns) > 0) {
+        # Calculate total count (sum of 1s, treating NA as 0 for counting)
+        total_col <- paste0("total_", gsub("is_", "", cat_col), "s")
+        result[[total_col]] <- rowSums(result[cat_columns], na.rm = TRUE)
+
+        # Calculate binary indicator (any medication in this category)
+        binary_col <- paste0("taking_",  gsub("is_", "", cat_col), "s")
+        result[[binary_col]] <- as.numeric(result[[total_col]] > 0)
+      }
+    }
+  }
+
   final_result <- all_ids %>%
     left_join(result, by = id_col)
 

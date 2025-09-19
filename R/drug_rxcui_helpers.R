@@ -102,12 +102,14 @@
   found_count <- sum(!is.na(result_df[[rxcui_column]]))
   valid_count <- sum(!is.na(original_df[[med_column]]) & original_df[[med_column]] != "")
 
-  cli::cli_h2(col_cyan("RxCUI RESULTS"))
-  cli::cli_alert_info("Method {method}")
-  cli::cli_alert_info("Coverage: {found_count}/{valid_count} ({round(found_count/valid_count*100, 1)}%)")
+  cli_h2(col_cyan("RxCUI RESULTS"))
+  cli_ul()
+  cli_li("Method: {method}")
+  cli_li("Coverage: {found_count}/{valid_count} ({round({found_count}/{valid_count}*100, 1)%)")
 
   elapsed <- difftime(Sys.time(), start_time, units = "mins")
-  cli_alert_info("Time: {round(elapsed, 1)} minutes ")
+  cli_li("Time: {round(elapsed, 1)} minutes ")
+  cli_end()
   cli_rule()
 }
 
