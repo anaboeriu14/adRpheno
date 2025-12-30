@@ -231,13 +231,7 @@ sum_cognitive_test_components <- function(dataf, component_cols,
     composite_name <- paste0(group_name, "_comp_score")
     zscore_cols <- paste0("zscore_", test_groups[[group_name]], "_", group_name)
 
-    result_df <- result_df %>%
-      dplyr::mutate(
-        !!composite_name := rowMeans(
-          dplyr::across(dplyr::all_of(zscore_cols)),
-          na.rm = TRUE
-        )
-      )
+    result_df[[composite_name]] <- rowMeans(result_df[zscore_cols], na.rm = TRUE)
   }
 
   return(result_df)
