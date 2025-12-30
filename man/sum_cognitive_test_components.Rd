@@ -10,44 +10,34 @@ sum_cognitive_test_components(
   result_col = "total_score",
   method = "sum",
   na.rm = TRUE,
-  force = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
-\item{dataf}{A data frame containing the test component columns.}
+\item{dataf}{A data frame containing test component columns}
 
-\item{component_cols}{Character vector of column names to combine.}
+\item{component_cols}{Character vector of column names to combine}
 
-\item{result_col}{Name for the new total score column (default: "total_score").}
+\item{result_col}{Name for new total score column (default: "total_score")}
 
-\item{method}{Function to use for combining scores: "sum" or "mean" (default: "sum").}
+\item{method}{Combination method: "sum" or "mean" (default: "sum")}
 
-\item{na.rm}{Logical, whether to remove NA values when combining (default: TRUE).}
+\item{na.rm}{Remove NA values when combining (default: TRUE)}
 
-\item{force}{Logical, whether to force recalculation if already processed (default: FALSE).}
+\item{verbose}{Show informative messages (default: TRUE)}
 }
 \value{
-A data frame with the original data plus a new column for the total score.
+Data frame with added total score column
 }
 \description{
-Creates a total score by combining multiple test component scores.
-Allows for different combination methods (sum, mean, etc.).
+Combines multiple test component scores using sum or mean.
 }
 \examples{
 \dontrun{
-# Sum Trail A and B times
-result <- calculate_total_score(
+result <- sum_cognitive_test_components(
   dataf = my_data,
   component_cols = c("trails_a_time", "trails_b_time"),
-  result_col = "trails_ab_total_time"
-)
-
-# Calculate mean of memory tests
-result <- calculate_total_score(
-  dataf = my_data,
-  component_cols = c("recall_1", "recall_2", "recognition"),
-  result_col = "memory_mean",
-  method = "mean"
+  result_col = "trails_total"
 )
 }
 }

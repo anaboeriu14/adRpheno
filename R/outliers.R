@@ -6,10 +6,16 @@
 #' @param dataf A data frame containing the numeric variable
 #' @param var_name Character. Name of the numeric variable to analyze
 #' @param multiplier Numeric. Multiplier for IQR (default: 1.5)
-#' @param label Character. Optional custom label for the output (default: NULL, uses var_name)
+#' @param label Character. Optional custom label for output (default: NULL, uses var_name)
 #'
 #' @return Data frame with lower bound (LB), upper bound (UB), and notes
 #' @export
+#'
+#' @examples
+#' \dontrun{
+#' thresholds <- detect_outlier_thresholds(df, "age")
+#' thresholds <- detect_outlier_thresholds(df, "weight", multiplier = 2)
+#' }
 detect_outlier_thresholds <- function(dataf, var_name, multiplier = 1.5, label = NULL) {
 
   adRutils::validate_params(
@@ -24,7 +30,8 @@ detect_outlier_thresholds <- function(dataf, var_name, multiplier = 1.5, label =
     ),
     context = "detect_outlier_thresholds"
   )
-  # === STEP 2: Calculate quartiles and bounds ===
+
+  # Calculate quartiles and bounds
   q1 <- stats::quantile(dataf[[var_name]], 0.25, na.rm = TRUE)
   q3 <- stats::quantile(dataf[[var_name]], 0.75, na.rm = TRUE)
   iqr <- q3 - q1
@@ -32,31 +39,33 @@ detect_outlier_thresholds <- function(dataf, var_name, multiplier = 1.5, label =
   lower_bound <- q1 - multiplier * iqr
   upper_bound <- q3 + multiplier * iqr
 
-  # === STEP 3: Return data frame exactly as you want ===
-  out_lb_ub = data.frame(
+  # Return results
+  data.frame(
     LB = lower_bound,
     UB = upper_bound,
-    notes = if (is.null(label)) var_name else label
+    notes = if (is.null(label)) var_name else label,
+    stringsAsFactors = FALSE
   )
-  return(out_lb_ub)
 }
 
 #' Remove Outliers from Numeric Variables
 #'
 #' Identifies outliers in numeric variables and replaces them with NA.
+#' This function is idempotent - running it multiple times with the same
+#' parameters produces the same result.
 #'
 #' @param dataf A data frame
 #' @param var_names Character vector. Names of numeric variables to check for outliers
 #' @param multiplier Numeric. Multiplier for IQR in outlier detection (default: 1.5)
 #' @param paired_cols Named list. Optional pairing of transformed columns with original columns
 #' @param remove_all_na_rows Logical. If TRUE, removes rows where all specified variables are NA (default: TRUE)
-#' @param force Logical. If TRUE, bypasses the check for previous processing (default: FALSE)
+#' @param verbose Logical. If TRUE, shows informative messages (default: TRUE)
 #'
 #' @return Data frame with outliers replaced by NA
 #' @export
 replace_outliers_with_na <- function(dataf, var_names, multiplier = 1.5,
                                      paired_cols = NULL, remove_all_na_rows = TRUE,
-                                     force = FALSE) {
+                                     verbose = TRUE) {
 
   adRutils::validate_params(
     data = dataf,
@@ -71,8 +80,8 @@ replace_outliers_with_na <- function(dataf, var_names, multiplier = 1.5,
         message = "{.arg remove_all_na_rows} must be TRUE or FALSE"
       ),
       list(
-        condition = is.logical(force) && length(force) == 1,
-        message = "{.arg force} must be TRUE or FALSE"
+        condition = is.logical(verbose) && length(verbose) == 1,
+        message = "{.arg verbose} must be TRUE or FALSE"
       ),
       list(
         condition = is.null(paired_cols) || is.list(paired_cols),
@@ -82,66 +91,82 @@ replace_outliers_with_na <- function(dataf, var_names, multiplier = 1.5,
     context = "replace_outliers_with_na"
   )
 
-  # === STEP 2: Check processing history ===
-  if (!force) adRutils::is_processed("replace_outliers_with_na", var_names, error_if_exists = TRUE)
-
-  cli::cli_alert_info("Processing {length(var_names)} variables for outlier removal...")
-
   result_df <- dataf
-  processed_vars <- character()
-  total_outliers <- 0  # Track total outliers removed
+  total_outliers <- 0
 
+  # Process each variable
   for (var in var_names) {
-    # Skip non-numeric columns
     if (!is.numeric(result_df[[var]])) {
-      cli::cli_alert_warning("Skipping non-numeric column: {var}")
+      if (verbose) cli::cli_alert_warning("Skipping non-numeric column: {var}")
       next
     }
 
-    # Get outlier bounds
-    cutoffs <- detect_outlier_thresholds(result_df, var, multiplier)
-
-    # Find and replace outliers
-    outliers <- !is.na(result_df[[var]]) &
-      (result_df[[var]] <= cutoffs$LB | result_df[[var]] >= cutoffs$UB)
-
-    result_df[outliers, var] <- NA
-
-    # Handle paired columns
-    if (!is.null(paired_cols) && var %in% names(paired_cols)) {
-      paired_var <- paired_cols[[var]]
-      if (paired_var %in% names(result_df)) {
-        result_df[outliers, paired_var] <- NA
-      }
-    }
-
-    # Track progress
-    total_outliers <- total_outliers + sum(outliers)
-    processed_vars <- c(processed_vars, var)
+    # Replace outliers for this variable
+    outlier_result <- .replace_outliers_single_var(
+      result_df, var, multiplier, paired_cols
+    )
+    result_df <- outlier_result$data
+    total_outliers <- total_outliers + outlier_result$n_outliers
   }
 
-  # === STEP 4: Remove all-NA rows if requested ===
-  if (remove_all_na_rows && length(processed_vars) > 0) {
-    all_na_rows <- apply(result_df[processed_vars], 1, function(row) all(is.na(row)))
-    n_removed <- sum(all_na_rows)
-
-    if (n_removed > 0) {
-      cli::cli_alert_info("Removing {n_removed} rows with all NAs ({round(100 * n_removed / nrow(result_df), 1)}%)")
-      result_df <- result_df[!all_na_rows, ]
-    }
+  # Remove all-NA rows if requested
+  if (remove_all_na_rows) {
+    result_df <- .remove_all_na_rows(result_df, dataf, var_names, verbose)
   }
 
-  # === STEP 5: Complete processing ===
-  if (length(processed_vars) > 0) {
-    adRutils::register_processed("replace_outliers_with_na", processed_vars)
-
-    # Show summary instead of individual messages
+  # Final summary message
+  if (verbose) {
     if (total_outliers > 0) {
-      cli::cli_alert_success("Removed {total_outliers} outliers across {length(processed_vars)} variables")
+      cli::cli_alert_success("Replaced {total_outliers} outlier{?s} with NA across {length(var_names)} variable{?s}")
+    } else {
+      cli::cli_alert_info("No outliers detected")
     }
-    cli::cli_alert_success("Outlier removal complete ({length(processed_vars)} variables processed)")
   }
+
   return(result_df)
 }
 
 
+#' Replace outliers for a single variable
+#' @keywords internal
+.replace_outliers_single_var <- function(dataf, var, multiplier, paired_cols) {
+  # Get outlier bounds
+  cutoffs <- detect_outlier_thresholds(dataf, var, multiplier)
+
+  # Identify outliers
+  outliers <- !is.na(dataf[[var]]) &
+    (dataf[[var]] < cutoffs$LB | dataf[[var]] > cutoffs$UB)
+
+  n_outliers <- sum(outliers)
+
+  # Replace outliers in main variable
+  if (n_outliers > 0) {
+    dataf[outliers, var] <- NA
+  }
+
+  # Handle paired columns
+  if (!is.null(paired_cols) && var %in% names(paired_cols)) {
+    paired_var <- paired_cols[[var]]
+    if (paired_var %in% names(dataf)) {
+      dataf[outliers, paired_var] <- NA
+    }
+  }
+
+  list(data = dataf, n_outliers = n_outliers)
+}
+
+#' Remove rows where all specified variables are NA
+#' @keywords internal
+.remove_all_na_rows <- function(result_df, original_df, var_names, verbose) {
+  all_na_rows <- apply(result_df[var_names], 1, function(row) all(is.na(row)))
+  n_removed <- sum(all_na_rows)
+
+  if (n_removed > 0) {
+    result_df <- result_df[!all_na_rows, ]
+    if (verbose) {
+      cli::cli_alert_info("Removed {n_removed} rows with all NAs ({round(100 * n_removed / nrow(original_df), 1)}%)")
+    }
+  }
+
+  return(result_df)
+}

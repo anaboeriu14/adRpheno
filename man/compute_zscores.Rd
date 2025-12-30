@@ -9,23 +9,38 @@ compute_zscores(
   vars,
   prefix = "zscore_",
   group_vars = NULL,
-  force = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
 \item{dataf}{A data frame}
 
-\item{vars}{Character vector. Names of numeric variables to standardize}
+\item{vars}{Character vector of numeric variable names to standardize}
 
-\item{prefix}{Character. Prefix for standardized variable names (default: "zscore_")}
+\item{prefix}{Prefix for standardized variable names (default: "zscore_")}
 
-\item{group_vars}{Character vector. Optional grouping variables for group-wise standardization}
+\item{group_vars}{Character vector of grouping variables for group-wise
+standardization (optional)}
 
-\item{force}{Logical. If TRUE, bypasses the check for previous processing (default: FALSE)}
+\item{verbose}{Show informative messages (default: TRUE)}
 }
 \value{
 Data frame with added standardized variable columns
 }
 \description{
 Creates standardized (z-score) versions of numeric variables.
+Z-scores have mean = 0 and standard deviation = 1.
+}
+\examples{
+\dontrun{
+# Simple standardization
+result <- compute_zscores(df, vars = c("age", "weight", "height"))
+
+# Group-wise standardization
+result <- compute_zscores(
+  df,
+  vars = c("test_score1", "test_score2"),
+  group_vars = c("age_group", "sex")
+)
+}
 }

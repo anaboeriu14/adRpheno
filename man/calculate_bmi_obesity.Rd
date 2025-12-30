@@ -10,22 +10,19 @@ calculate_bmi_obesity(
   height_col,
   bmi_col,
   cutoff = 30,
-  force = FALSE,
   verbose = TRUE
 )
 }
 \arguments{
 \item{dataf}{A data frame containing the data}
 
-\item{weight_col}{String. The name of the column containing weight in pounds (lbs)}
+\item{weight_col}{String. Column name containing weight in pounds (lbs)}
 
-\item{height_col}{String. The name of the column containing height in inches}
+\item{height_col}{String. Column name containing height in inches}
 
-\item{bmi_col}{String. The name of the column to store the BMI value}
+\item{bmi_col}{String. Column name to store the BMI value}
 
 \item{cutoff}{Numeric. BMI cutoff value for obesity classification (default: 30)}
-
-\item{force}{Logical. If TRUE, recalculates even if outputs already exist (default: FALSE)}
 
 \item{verbose}{Logical. If TRUE, shows informative messages (default: TRUE)}
 }
@@ -35,12 +32,10 @@ Data frame with calculated BMI values and obesity classification
 \description{
 Calculates BMI using imperial units (weight in pounds, height in inches),
 renames measurement columns for clarity, and adds obesity classification.
-Uses output-based tracking to prevent duplicate calculations.
 }
 \examples{
 \dontrun{
-# Calculate BMI and add obesity classification
-testD <- data.frame(weight = c(150, 180, 200), height = c(65, 70, 72), BMI = c(25, 26, 10))
-calculate_bmi_obesity(testD, "weight", "height", "BMI")
+df <- data.frame(weight = c(150, 180, 200), height = c(65, 70, 72))
+calculate_bmi_obesity(df, "weight", "height", "BMI")
 }
 }

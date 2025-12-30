@@ -13,7 +13,6 @@ calculate_bp_metrics(
   calculate_pp = TRUE,
   calculate_map = FALSE,
   decimal_places = 2,
-  force = FALSE,
   verbose = TRUE
 )
 }
@@ -34,50 +33,27 @@ calculate_bp_metrics(
 
 \item{decimal_places}{Integer specifying decimal places for rounding (default: 2)}
 
-\item{force}{Logical. If TRUE, recalculates even if outputs already exist (default: FALSE)}
-
 \item{verbose}{Logical. If TRUE, prints informative messages (default: TRUE)}
 }
 \value{
-Data frame with added average BP columns and selected derived metrics.
-New columns are named \code{mean_arterial_pressure} or \code{pulse_pressure}
+Data frame with added average BP columns and selected derived metrics
 }
 \description{
 Calculates average systolic and diastolic blood pressure from two measurements,
 and optionally calculates mean arterial pressure (MAP) and/or pulse pressure.
-Uses output-based tracking to prevent duplicate calculations.
 }
 \details{
-Mean arterial pressure (MAP) is calculated as:
-MAP = DBP + (SBP - DBP) / 3
-
-Pulse pressure (PP) is calculated as:
-PP = SBP - DBP
-
-where:
-\itemize{
-\item DBP = diastolic blood pressure
-\item SBP = systolic blood pressure
-}
+Mean arterial pressure (MAP) is calculated as: MAP = DBP + (SBP - DBP) / 3
+Pulse pressure (PP) is calculated as: PP = SBP - DBP
 }
 \examples{
 \dontrun{
-test_df <- data.frame(
-  age = c(50, 54, 32),
+df <- data.frame(
   systolic1 = c(120, 130, 125),
   diastolic1 = c(80, 85, 82),
   systolic2 = c(130, 140, 135),
   diastolic2 = c(85, 90, 88)
 )
-# Calculate PP only
-calculate_bp_metrics(test_df, "systolic1", "systolic2", "diastolic1", "diastolic2")
-
-# Calculate both MAP and pulse pressure
-calculate_bp_metrics(test_df, "systolic1", "systolic2", "diastolic1", "diastolic2",
-                    calculate_map = TRUE, calculate_pp = TRUE)
-
-# Calculate MAP only
-calculate_bp_metrics(test_df, "systolic1", "systolic2", "diastolic1", "diastolic2",
-                    calculate_map = TRUE, calculate_pp = FALSE)
+calculate_bp_metrics(df, "systolic1", "systolic2", "diastolic1", "diastolic2")
 }
 }

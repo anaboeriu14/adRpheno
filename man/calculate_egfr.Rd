@@ -10,22 +10,19 @@ calculate_egfr(
   age_col,
   sex_col,
   egfr_col = "eGFR",
-  force = FALSE,
   verbose = TRUE
 )
 }
 \arguments{
 \item{dataf}{A data frame containing the input data}
 
-\item{creatinine_col}{String specifying the column name for serum creatinine in mg/dL}
+\item{creatinine_col}{String specifying column name for serum creatinine in mg/dL}
 
-\item{age_col}{String specifying the column name for age in years}
+\item{age_col}{String specifying column name for age in years}
 
-\item{sex_col}{String specifying the column name for sex (0 for male, 1 for female)}
+\item{sex_col}{String specifying column name for sex (0 for male, 1 for female)}
 
-\item{egfr_col}{Character string for the output column name (default: "eGFR")}
-
-\item{force}{Logical. If TRUE, recalculates even if eGFR already exists (default: FALSE)}
+\item{egfr_col}{Character string for output column name (default: "eGFR")}
 
 \item{verbose}{Logical. If TRUE, shows informative messages (default: TRUE)}
 }
@@ -34,30 +31,17 @@ Data frame with added eGFR column
 }
 \description{
 Calculates eGFR using the CKD-EPI formula based on serum creatinine, age,
-and sex. Uses output-based tracking to prevent duplicate calculations.
+and sex.
 }
 \details{
-Uses the CKD-EPI (Chronic Kidney Disease Epidemiology Collaboration) equation:
-
-For females:
-\deqn{eGFR = 142 \times \min\left(\frac{SCr}{\kappa}, 1\right)^\alpha
-  \times \max\left(\frac{SCr}{\kappa}, 1\right)^{-1.200} \times 0.9938^{\text{age}} \times 1.012}
-
-For Males:
-\deqn{eGFR = 142 \times \min\left(\frac{SCr}{\kappa}, 1\right)^\alpha
-  \times \max\left(\frac{SCr}{\kappa}, 1\right)^{-1.200} \times 0.9938^{\text{age}} \times 1}
-
-where:
-\itemize{
-\item SCr = standardized serum creatinine in mg/dL
-\item \eqn{\kappa} is 0.7 for females and 0.9 for males
-\item \eqn{\alpha} is -0.241 for females and -0.302 for males
-}
+Uses the CKD-EPI (Chronic Kidney Disease Epidemiology Collaboration) equation.
+For females: eGFR = 142 × min(SCr/κ, 1)^α × max(SCr/κ, 1)^(-1.200) × 0.9938^age × 1.012
+For males: eGFR = 142 × min(SCr/κ, 1)^α × max(SCr/κ, 1)^(-1.200) × 0.9938^age × 1
+where κ is 0.7 for females and 0.9 for males; α is -0.241 for females and -0.302 for males
 }
 \examples{
 \dontrun{
-testD <- data.frame(creatinine = c(1.2, 0.8), age = c(50, 60), sex = c(0, 1))
-calculate_egfr(testD, "creatinine", "age", "sex")
+df <- data.frame(creatinine = c(1.2, 0.8), age = c(50, 60), sex = c(0, 1))
+calculate_egfr(df, "creatinine", "age", "sex")
 }
-
 }

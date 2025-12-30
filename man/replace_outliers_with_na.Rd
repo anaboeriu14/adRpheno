@@ -10,7 +10,7 @@ replace_outliers_with_na(
   multiplier = 1.5,
   paired_cols = NULL,
   remove_all_na_rows = TRUE,
-  force = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -24,11 +24,13 @@ replace_outliers_with_na(
 
 \item{remove_all_na_rows}{Logical. If TRUE, removes rows where all specified variables are NA (default: TRUE)}
 
-\item{force}{Logical. If TRUE, bypasses the check for previous processing (default: FALSE)}
+\item{verbose}{Logical. If TRUE, shows informative messages (default: TRUE)}
 }
 \value{
 Data frame with outliers replaced by NA
 }
 \description{
 Identifies outliers in numeric variables and replaces them with NA.
+This function is idempotent - running it multiple times with the same
+parameters produces the same result.
 }

@@ -13,7 +13,7 @@ detect_outlier_thresholds(dataf, var_name, multiplier = 1.5, label = NULL)
 
 \item{multiplier}{Numeric. Multiplier for IQR (default: 1.5)}
 
-\item{label}{Character. Optional custom label for the output (default: NULL, uses var_name)}
+\item{label}{Character. Optional custom label for output (default: NULL, uses var_name)}
 }
 \value{
 Data frame with lower bound (LB), upper bound (UB), and notes
@@ -21,4 +21,10 @@ Data frame with lower bound (LB), upper bound (UB), and notes
 \description{
 Calculates lower and upper bounds for outlier detection using the
 IQR method (Q1 - k\emph{IQR and Q3 + k}IQR).
+}
+\examples{
+\dontrun{
+thresholds <- detect_outlier_thresholds(df, "age")
+thresholds <- detect_outlier_thresholds(df, "weight", multiplier = 2)
+}
 }
