@@ -1,5 +1,3 @@
-# Exported functions -------------------------------------------------------
-
 #' Compute Adjusted Composite Scores
 #'
 #' Computes z-scores for test scores adjusted for demographic factors and
@@ -62,8 +60,8 @@ create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
   # Apply filters and compute
   result_df <- dataf %>%
     .apply_filters(filters) %>%
-    .compute_grouped_zscores(test_groups, grouping_vars) %>%
-    .compute_composite_scores(test_groups) %>%
+    .compute_cognitive_zscores(test_groups, grouping_vars) %>%
+    .compute_cognitive_composites(test_groups) %>%
     dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~round(., digits)))
 
   if (verbose) {
@@ -198,9 +196,9 @@ sum_cognitive_test_components <- function(dataf, component_cols,
   return(dataf)
 }
 
-#' Compute z-scores grouped by demographic variables
+#' Compute z-scores grouped by demographic variables for cognitive variables
 #' @keywords internal
-.compute_grouped_zscores <- function(dataf, test_groups, grouping_vars) {
+.compute_cognitive_zscores <- function(dataf, test_groups, grouping_vars) {
   result_df <- dataf %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(grouping_vars)))
 
@@ -224,13 +222,14 @@ sum_cognitive_test_components <- function(dataf, component_cols,
 
 #' Compute composite scores from z-scores
 #' @keywords internal
-.compute_composite_scores <- function(dataf, test_groups) {
+.compute_cognitive_composites <- function(dataf, test_groups) {
   result_df <- dataf
 
   for (group_name in names(test_groups)) {
     composite_name <- paste0(group_name, "_comp_score")
     zscore_cols <- paste0("zscore_", test_groups[[group_name]], "_", group_name)
 
+    # Use base R indexing
     result_df[[composite_name]] <- rowMeans(result_df[zscore_cols], na.rm = TRUE)
   }
 
