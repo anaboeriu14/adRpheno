@@ -11,16 +11,10 @@ Description: Tools for standardizing and analyzing Alzheimer's Disease (AD)
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Imports: 
     adRutils (>= 0.4.0),
     stats, dplyr,
     stringr, tidyr, utils,rlang,
-    jsonlite, rxnorm, httr,
+    jsonlite, httr,
     purrr, cli
-    
- 
-    
-    
-   
-    

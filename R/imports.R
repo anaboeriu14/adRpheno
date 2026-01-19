@@ -9,7 +9,6 @@
 #' @importFrom utils txtProgressBar setTxtProgressBar head
 #' @importFrom purrr map map_int
 #' @import jsonlite
-#' @import rxnorm
 #' @import httr
 #' @import cli
 #' @import dplyr
