@@ -2,7 +2,7 @@
 % Please edit documentation in R/pivot_medication_data_wide.R
 \name{pivot_medication_data_wide}
 \alias{pivot_medication_data_wide}
-\title{Transform long medication data to wide format with position preservation}
+\title{Pivot medication data from long to wide format}
 \usage{
 pivot_medication_data_wide(
   dataf,
@@ -16,67 +16,37 @@ pivot_medication_data_wide(
 )
 }
 \arguments{
-\item{dataf}{Data frame in long format containing medication data}
+\item{dataf}{Long-format data frame}
 
-\item{id_col}{Character. Name of the ID column identifying participants}
+\item{id_col}{Participant ID column}
 
-\item{medication_col}{Character. Name of the column containing medication names/values}
+\item{medication_col}{Medication name column}
 
-\item{position_col}{Character. Name of the column containing position identifiers
-(e.g., "medication_1_name", "medication_2_name"). Default is "question_col"}
+\item{position_col}{Column with position identifiers (e.g., "medication_1_name")}
 
-\item{category_cols}{Character vector. Names of binary indicator columns to include
-in wide format (optional). These will be numbered sequentially (e.g., "is_diabetes_med_1")}
+\item{category_cols}{Binary indicator columns to aggregate (optional)}
 
-\item{max_meds}{Integer. Maximum number of medication positions to include per
-participant. If NULL (default), includes all positions found in data}
+\item{max_meds}{Maximum medications per participant (default: NULL = all)}
 
-\item{fill_value}{Value to use for missing medications. Default is NA}
+\item{fill_value}{Value for missing medications (default: NA)}
 
-\item{med_prefix}{Character. Prefix to add to medication column names. Default is "new_"
-which transforms "medication_1_name" to "new_medication_1_name"}
+\item{med_prefix}{Prefix for medication columns (default: "new_")}
 }
 \value{
-Data frame in wide format with:
-\itemize{
-\item One row per participant
-\item Medication columns named with med_prefix + original position column values
-\item Category columns (if specified) named with category name + position number
-\item All participants included, even those without medication data
-}
+Wide-format data frame with one row per participant
 }
 \description{
-Converts medication data from long format to wide format while preserving original
-medication positions and providing the option to include binary medication category indicators.
-}
-\details{
-Function preserves the original positioning of medications by extracting position
-numbers from the position_col and maintaining those positions in the wide format.
-Ensures that medication_5_name always becomes new_medication_5_name regardless
-of whether medications 1-4 contain data or are NA.
-
-Binary category indicators are handled separately and use simple numeric suffixes
-(e.g., is_diabetes_med_1, is_diabetes_med_2) based on the extracted position numbers.
+Transforms medication data from long format (one row per medication) to wide
+format (one row per participant) while preserving medication positions and
+aggregating category indicators.
 }
 \examples{
 \dontrun{
-
-# Include binary category indicators
-wide_meds <- create_wide_medication_matrix(
-  data = medication_long_data,
+wide_df <- pivot_medication_data_wide(
+  long_df,
   id_col = "participant_id",
-  medication_col = "medication_col_to_use",
-  category_cols = c("diabetes_med", "hypertension_med"),
-  med_prefix = "clean_"
-)
-
-# Limit to first 10 medications only
-wide_meds <- create_wide_medication_matrix(
-  data = medication_long_data,
-  id_col = "participant_id",
-  medication_col = "medication_name",
-  max_meds = 10
+  medication_col = "med_name",
+  category_cols = c("is_diabetes_med", "is_hypertension_med")
 )
 }
-
 }

@@ -1,188 +1,152 @@
-#' Transform long medication data to wide format with position preservation
+#' Pivot medication data from long to wide format
 #'
-#' Converts medication data from long format to wide format while preserving original
-#' medication positions and providing the option to include binary medication category indicators.
+#' Transforms medication data from long format (one row per medication) to wide
+#' format (one row per participant) while preserving medication positions and
+#' aggregating category indicators.
 #'
-#' @param dataf Data frame in long format containing medication data
-#' @param id_col Character. Name of the ID column identifying participants
-#' @param medication_col Character. Name of the column containing medication names/values
-#' @param position_col Character. Name of the column containing position identifiers
-#'   (e.g., "medication_1_name", "medication_2_name"). Default is "question_col"
-#' @param category_cols Character vector. Names of binary indicator columns to include
-#'   in wide format (optional). These will be numbered sequentially (e.g., "is_diabetes_med_1")
-#' @param max_meds Integer. Maximum number of medication positions to include per
-#'   participant. If NULL (default), includes all positions found in data
-#' @param fill_value Value to use for missing medications. Default is NA
-#' @param med_prefix Character. Prefix to add to medication column names. Default is "new_"
-#'   which transforms "medication_1_name" to "new_medication_1_name"
+#' @param dataf Long-format data frame
+#' @param id_col Participant ID column
+#' @param medication_col Medication name column
+#' @param position_col Column with position identifiers (e.g., "medication_1_name")
+#' @param category_cols Binary indicator columns to aggregate (optional)
+#' @param max_meds Maximum medications per participant (default: NULL = all)
+#' @param fill_value Value for missing medications (default: NA)
+#' @param med_prefix Prefix for medication columns (default: "new_")
 #'
-#' @return Data frame in wide format with:
-#'   \itemize{
-#'     \item One row per participant
-#'     \item Medication columns named with med_prefix + original position column values
-#'     \item Category columns (if specified) named with category name + position number
-#'     \item All participants included, even those without medication data
-#'   }
-#'
-#' @details
-#' Function preserves the original positioning of medications by extracting position
-#' numbers from the position_col and maintaining those positions in the wide format.
-#' Ensures that medication_5_name always becomes new_medication_5_name regardless
-#' of whether medications 1-4 contain data or are NA.
-#'
-#' Binary category indicators are handled separately and use simple numeric suffixes
-#' (e.g., is_diabetes_med_1, is_diabetes_med_2) based on the extracted position numbers.
+#' @return Wide-format data frame with one row per participant
+#' @export
 #'
 #' @examples
 #' \dontrun{
-#'
-#' # Include binary category indicators
-#' wide_meds <- create_wide_medication_matrix(
-#'   data = medication_long_data,
+#' wide_df <- pivot_medication_data_wide(
+#'   long_df,
 #'   id_col = "participant_id",
-#'   medication_col = "medication_col_to_use",
-#'   category_cols = c("diabetes_med", "hypertension_med"),
-#'   med_prefix = "clean_"
-#' )
-#'
-#' # Limit to first 10 medications only
-#' wide_meds <- create_wide_medication_matrix(
-#'   data = medication_long_data,
-#'   id_col = "participant_id",
-#'   medication_col = "medication_name",
-#'   max_meds = 10
+#'   medication_col = "med_name",
+#'   category_cols = c("is_diabetes_med", "is_hypertension_med")
 #' )
 #' }
-#'
-#' @export
 pivot_medication_data_wide <- function(dataf,
-                                          id_col,
-                                          medication_col,
-                                          position_col = "question_col",
-                                          category_cols = NULL,
-                                          max_meds = NULL,
-                                          fill_value = NA,
-                                          med_prefix = "new_") {
+                                       id_col,
+                                       medication_col,
+                                       position_col = "question_col",
+                                       category_cols = NULL,
+                                       max_meds = NULL,
+                                       fill_value = NA,
+                                       med_prefix = "new_") {
 
-  # Build required columns list
-  required_cols <- c(id_col, medication_col, position_col)
-  if (!is.null(category_cols)) {
-    required_cols <- c(required_cols, category_cols)
-  }
+  .validate_pivot_inputs(dataf, id_col, medication_col, position_col, category_cols)
 
-  # Input validation
-  validate_params(
-    data = dataf,
-    columns = required_cols,
-    context = "create_wide_medication_matrix",
-    custom_checks = list(
-      list(
-        condition = is.character(id_col) && length(id_col) == 1,
-        message = "{.arg id_col} must be a single character string"
-      ),
-      list(
-        condition = is.character(medication_col) && length(medication_col) == 1,
-        message = "{.arg medication_col} must be a single character string"
-      ),
-      list(
-        condition = is.character(position_col) && length(position_col) == 1,
-        message = "{.arg position_col} must be a single character string"
-      ),
-      list(
-        condition = is.null(category_cols) || is.character(category_cols),
-        message = "{.arg category_cols} must be NULL or a character vector"
-      ),
-      list(
-        condition = is.null(max_meds) || (is.numeric(max_meds) && max_meds > 0),
-        message = "{.arg max_meds} must be NULL or a positive integer"
-      ),
-      list(
-        condition = is.character(med_prefix) && length(med_prefix) == 1,
-        message = "{.arg med_prefix} must be a single character string"
-      )
-    )
-  )
+  # Prepare data with positions
+  numbered_data <- .extract_med_positions(dataf, id_col, position_col, med_prefix)
 
-  # Prepare data - keep everything, extract position
-  numbered_data <- dataf %>%
-    select(all_of(required_cols)) %>%
-    group_by(!!sym(id_col)) %>%
-    mutate(
-      !!id_col := as.character(.data[[id_col]]),
-      position = as.numeric(stringr::str_extract(.data[[position_col]], "\\d+")),
-      # Add prefix to the beginning of the position column value
-      new_col_name = paste0(med_prefix, .data[[position_col]]),
-      # Handle cases where no number is found - use row number within group
-      position = dplyr::coalesce(.data[["position"]], dplyr::row_number())
-    ) %>%
-    ungroup() %>%
-    rename(med_num = .data[["position"]])
-
-  # Apply max_meds filter if specified
+  # Apply max_meds filter
   if (!is.null(max_meds)) {
-    numbered_data <- numbered_data %>%
-      filter(.data[["med_num"]] <= max_meds)
-
+    numbered_data <- numbered_data[numbered_data$med_num <= max_meds, ]
   }
 
-  # Create wide format for medications
-  wide_meds <- numbered_data %>%
-    select(all_of(c(id_col, medication_col)), .data[["new_col_name"]]) %>%
-    pivot_wider(
-      names_from =  .data[["new_col_name"]],
-      values_from = all_of(medication_col),
+  # Pivot medications
+  wide_meds <- .pivot_medications(numbered_data, id_col, medication_col, fill_value)
+
+  # Pivot and summarize categories
+  if (!is.null(category_cols)) {
+    wide_meds <- .pivot_categories(wide_meds, numbered_data, id_col, category_cols, fill_value)
+  }
+
+  # Ensure all participants included
+  all_ids <- unique(dataf[[id_col]])
+  .ensure_all_ids(wide_meds, all_ids, id_col)
+}
+
+#' @keywords internal
+#' @noRd
+.validate_pivot_inputs <- function(dataf, id_col, medication_col, position_col, category_cols) {
+  if (!is.data.frame(dataf) || nrow(dataf) == 0) {
+    cli::cli_abort("Input must be a non-empty data frame")
+  }
+
+  required <- c(id_col, medication_col, position_col)
+  if (!is.null(category_cols)) required <- c(required, category_cols)
+
+  missing <- setdiff(required, names(dataf))
+  if (length(missing) > 0) {
+    cli::cli_abort("Column{?s} not found: {.val {missing}}")
+  }
+}
+
+#' @keywords internal
+#' @noRd
+.extract_med_positions <- function(dataf, id_col, position_col, med_prefix) {
+  dataf %>%
+    dplyr::mutate(
+      !!id_col := as.character(.data[[id_col]]),
+      med_num = as.numeric(stringr::str_extract(.data[[position_col]], "\\d+")),
+      med_num = dplyr::coalesce(.data$med_num, dplyr::row_number()),
+      new_col_name = paste0(med_prefix, .data[[position_col]])
+    )
+}
+
+
+#' @keywords internal
+#' @noRd
+.pivot_medications <- function(numbered_data, id_col, medication_col, fill_value) {
+  numbered_data %>%
+    dplyr::select(dplyr::all_of(c(id_col, medication_col)), "new_col_name") %>%
+    tidyr::pivot_wider(
+      names_from = "new_col_name",
+      values_from = dplyr::all_of(medication_col),
       values_fill = fill_value
     )
+}
 
-  # Create wide format for categories if specified
-  if (!is.null(category_cols)) {
-    wide_categories <- list()
 
-    for (cat_col in category_cols) {
-      wide_cat <- numbered_data %>%
-        select(all_of(c(id_col, cat_col)), .data[["med_num"]]) %>%
-        pivot_wider(
-          names_from = .data[["med_num"]],
-          values_from = all_of(cat_col),
-          names_prefix = paste0(cat_col, "_"),
-          values_fill = fill_value
-        )
+#' @keywords internal
+#' @noRd
+.pivot_categories <- function(wide_meds, numbered_data, id_col, category_cols, fill_value) {
+  for (cat_col in category_cols) {
+    wide_cat <- numbered_data %>%
+      dplyr::select(dplyr::all_of(c(id_col, cat_col)), "med_num") %>%
+      tidyr::pivot_wider(
+        names_from = "med_num",
+        values_from = dplyr::all_of(cat_col),
+        names_prefix = paste0(cat_col, "_"),
+        values_fill = fill_value
+      )
 
-      wide_categories[[cat_col]] <- wide_cat
-    }
-
-    # Join all category matrices
-    result <- wide_meds
-    for (cat_data in wide_categories) {
-      result <- result %>%
-        left_join(cat_data, by = id_col)
-    }
-  } else {
-    result <- wide_meds
+    wide_meds <- dplyr::left_join(wide_meds, wide_cat, by = id_col)
   }
 
-  # Ensure all participants are included
-  all_ids <- dataf %>% distinct(.data[[id_col]])
+  # Add summary columns
+  .add_category_summaries(wide_meds, category_cols)
+}
 
-  if (!is.null(category_cols)) {
-    for (cat_col in category_cols) {
-      cat_pattern <- paste0("^", cat_col, "_")
-      cat_columns <- grep(cat_pattern, names(result), value = TRUE)
 
-      if (length(cat_columns) > 0) {
-        # Calculate total count (sum of 1s, treating NA as 0 for counting)
-        total_col <- paste0("total_", gsub("is_", "", cat_col), "s")
-        result[[total_col]] <- rowSums(result[cat_columns], na.rm = TRUE)
+#' @keywords internal
+#' @noRd
+.add_category_summaries <- function(wide_meds, category_cols) {
+  for (cat_col in category_cols) {
+    cat_pattern <- paste0("^", cat_col, "_\\d+$")
+    cat_columns <- grep(cat_pattern, names(wide_meds), value = TRUE)
 
-        # Calculate binary indicator (any medication in this category)
-        binary_col <- paste0("taking_",  gsub("is_", "", cat_col), "s")
-        result[[binary_col]] <- as.numeric(result[[total_col]] > 0)
-      }
+    if (length(cat_columns) > 0) {
+      # Total count
+      total_col <- paste0("total_", gsub("^is_|_med$", "", cat_col), "_meds")
+      wide_meds[[total_col]] <- rowSums(wide_meds[cat_columns], na.rm = TRUE)
+
+      # Binary indicator
+      binary_col <- paste0("taking_", gsub("^is_|_med$", "", cat_col), "_med")
+      wide_meds[[binary_col]] <- as.integer(wide_meds[[total_col]] > 0)
     }
   }
 
-  final_result <- all_ids %>%
-    left_join(result, by = id_col)
+  return(wide_meds)
+}
 
-  return(final_result)
+
+#' @keywords internal
+#' @noRd
+.ensure_all_ids <- function(wide_meds, all_ids, id_col) {
+  all_ids_df <- data.frame(id = all_ids, stringsAsFactors = FALSE)
+  names(all_ids_df) <- id_col
+
+  dplyr::left_join(all_ids_df, wide_meds, by = id_col)
 }

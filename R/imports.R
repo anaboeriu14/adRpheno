@@ -14,6 +14,7 @@
 #' @import dplyr
 #' @import adRutils
 #' @import cli
+#' @import rxnorm
 #'
 #' @keywords internal
 NULL
