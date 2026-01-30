@@ -1,148 +1,150 @@
-#' Process items in batches with caching
+#' Unified batch processor for medication API calls
 #'
-#' @param items Items to process
-#' @param api_function Function to call for each item
-#' @param batch_size Items per batch (default: 200)
-#' @param save_freq Save cache frequency (default: 50)
-#' @param cache_name Cache name
-#' @param cache_dir Cache directory
-#' @param max_age_days Cache expiration (default: 30)
-#' @param retry_count Retry attempts (default: 3)
-#' @param batch_delay Delay between batches (default: 2)
-#' @param process_type Label for progress bar
-#' @param ... Arguments passed to api_function
+#' Process items in batches with caching and progress tracking using adRutils cache
 #'
-#' @return Named vector of results
+#' @param items Character vector of items to process
+#' @param api_function Function that processes a single item
+#' @param batch_size Number of items per batch (default: 200)
+#' @param save_freq Save cache every N items (default: 50)
+#' @param cache_name Cache file name (default: "api_cache")
+#' @param cache_dir Cache directory (default: "cache")
+#' @param max_age_days Cache expiration in days (default: 30)
+#' @param retry_count Retry attempts for failed calls (default: 3)
+#' @param batch_delay Seconds between batches (default: 2)
+#' @param process_type Description for progress messages (default: "items")
+#' @param ... Additional arguments passed to api_function
+#' @return Named list of results or cache object
 #' @keywords internal
-#' @noRd
-.process_batch <- function(items,
-                           api_function,
-                           batch_size = 200,
-                           save_freq = 50,
-                           cache_name = "api_cache",
-                           cache_dir = "cache",
-                           max_age_days = 30,
-                           retry_count = 3,
-                           batch_delay = 2,
-                           process_type = "items",
-                           ...) {
+.process_batch <- function(items, api_function, batch_size = 200, save_freq = 50,
+                           cache_name = "api_cache", cache_dir = "cache",
+                           max_age_days = 30, retry_count = 3, batch_delay = 2,
+                           process_type = "items", ...) {
 
-  cache <- .load_cache(cache_name, cache_dir, max_age_days)
-
-  # Split cached vs new
-  split_items <- .split_cached_items(items, cache, max_age_days)
-
-  if (length(split_items$to_process) == 0) {
-    return(.format_results(split_items$cached, items))
-  }
-
-  # Process new items
-  results <- split_items$cached
-  batches <- .create_batches(split_items$to_process, batch_size)
-
-  cli::cli_progress_bar(
-    format = "{process_type}: [{cli::pb_bar}] {cli::pb_percent}",
-    total = length(split_items$to_process)
-  )
-
-  for (i in seq_along(batches)) {
-    batch_results <- .process_single_batch(batches[[i]], api_function, retry_count, ...)
-
-    for (item in names(batch_results)) {
-      cache <- adRutils::add_to_cache(cache, item, batch_results[[item]])
-      results[[item]] <- batch_results[[item]]
-      cli::cli_progress_update()
-    }
-
-    # Periodic save
-    if (i %% max(1, ceiling(save_freq / batch_size)) == 0 || i == length(batches)) {
-      adRutils::save_cache(cache, cache_name, cache_dir)
-    }
-
-    if (i < length(batches) && batch_delay > 0) Sys.sleep(batch_delay)
-  }
-
-  cli::cli_progress_done()
-
-  .format_results(results, items)
-}
-
-
-#' @keywords internal
-#' @noRd
-.load_cache <- function(cache_name, cache_dir, max_age_days) {
+  # Initialize cache using adRutils
   cache <- adRutils::initialize_cache(cache_name, cache_dir)
 
+  # Clean expired entries if cache is old
   if (adRutils::is_cache_expired(cache, max_age_days)) {
     cache <- adRutils::clean_cache(cache, max_age_days)
   }
 
-  cache
-}
+  # Initialize progress bar for ALL items (including cached)
+  total_items <- length(items)
+  pb_id <- cli::cli_progress_bar(
+    format = paste0("Processing ", process_type, " [{cli::pb_bar}] {cli::pb_current}/{cli::pb_total}"),
+    total = total_items,
+    clear = FALSE
+  )
 
-
-#' @keywords internal
-#' @noRd
-.split_cached_items <- function(items, cache, max_age_days) {
-  cached <- list()
-  to_process <- character()
+  # Filter items that need processing, updating progress for cached items
+  items_to_process <- character()
+  cache_results <- list()
+  cached_count <- 0
 
   for (item in items) {
-    val <- adRutils::get_from_cache(cache, item, default = NULL, max_age_days = max_age_days)
-    if (is.null(val)) {
-      to_process <- c(to_process, item)
+    cached_value <- adRutils::get_from_cache(cache, item, default = NULL, max_age_days = max_age_days)
+    if (is.null(cached_value)) {
+      items_to_process <- c(items_to_process, item)
     } else {
-      cached[[item]] <- val
+      cache_results[[item]] <- cached_value
+      cached_count <- cached_count + 1
+      cli::cli_progress_update(id = pb_id, inc = 1)
     }
   }
 
-  list(cached = cached, to_process = to_process)
-}
-
-
-#' @keywords internal
-#' @noRd
-.create_batches <- function(items, batch_size) {
-  split(items, ceiling(seq_along(items) / batch_size))
-}
-
-
-#' @keywords internal
-#' @noRd
-.process_single_batch <- function(batch, api_function, retry_count, ...) {
-  results <- list()
-
-  for (item in batch) {
-    result <- .call_with_retry(api_function, item, retry_count, ...)
-    results[[item]] <- result
+  if (length(items_to_process) == 0) {
+    cli::cli_progress_done(id = pb_id)
+    cli::cli_alert_success("All {total_items} {process_type} retrieved from cache")
+    return(cache_results[items])
   }
 
-  results
-}
-
-
-#' @keywords internal
-#' @noRd
-.call_with_retry <- function(fn, item, retry_count, ...) {
-  for (attempt in seq_len(retry_count)) {
-    result <- tryCatch(fn(item, ...), error = function(e) NULL)
-    if (!is.null(result)) return(result)
-    if (attempt < retry_count) Sys.sleep(0.5)
+  # Show cache statistics
+  if (cached_count > 0) {
+    cli::cli_alert_info("{cached_count}/{total_items} {process_type} found in cache")
   }
-  NA
-}
 
+  # Create batches
+  batches <- split(items_to_process, ceiling(seq_along(items_to_process) / batch_size))
+  cli::cli_alert_info("Processing {length(items_to_process)} new {process_type} in {length(batches)} batch{?es}")
 
-#' @keywords internal
-#' @noRd
-.format_results <- function(results, items) {
-  sapply(results[items], function(x) {
+  # Process each batch
+  for (i in seq_along(batches)) {
+    batch <- batches[[i]]
+
+    # Process batch
+    batch_results <- .process_one_batch(batch, api_function, retry_count, pb_id, ...)
+
+    # Add results to cache
+    for (item in names(batch_results)) {
+      cache <- adRutils::add_to_cache(cache, item, batch_results[[item]])
+      cache_results[[item]] <- batch_results[[item]]
+    }
+
+    # Save cache periodically
+    if (i %% save_freq == 0 || i == length(batches)) {
+      adRutils::save_cache(
+        cache = cache,
+        cache_name = cache_name,
+        cache_dir = cache_dir,
+        force = TRUE,
+        periodic = FALSE
+      )
+    }
+
+    # Delay between batches (except last one)
+    if (i < length(batches) && batch_delay > 0) {
+      Sys.sleep(batch_delay)
+    }
+  }
+
+  # Complete progress bar
+  cli::cli_progress_done(id = pb_id)
+
+  cli::cli_alert_success("Processed {length(items_to_process)} new {process_type} ({cached_count} from cache)")
+
+  final_results <- sapply(cache_results[items], function(x) {
     if (is.list(x) && length(x) == 1) {
-      as.character(x[[1]])
-    } else if (is.null(x) || (length(x) == 1 && is.na(x))) {
-      NA_character_
+      return(as.character(x[[1]]))
     } else {
-      as.character(x)
+      return(as.character(x))
     }
   })
+
+  return(final_results)
+}
+
+#' Process a single batch with retry logic
+#' @keywords internal
+.process_one_batch <- function(batch, api_function, retry_count, pb_id, ...) {
+  batch_results <- list()
+
+  for (item in batch) {
+    result <- NULL
+    attempts <- 0
+
+    while (is.null(result) && attempts < retry_count) {
+      attempts <- attempts + 1
+      tryCatch({
+        result <- api_function(item, ...)
+        if (!is.null(result)) {
+          batch_results[[item]] <- result
+        }
+      }, error = function(e) {
+        if (attempts == retry_count) {
+          cli_alert_warning("Failed to process {.strong {item}} after {retry_count} attempts: {e$message}")
+          batch_results[[item]] <- NA
+        } else {
+          Sys.sleep(1)
+        }
+      })
+    }
+
+    if (is.null(result)) {
+      batch_results[[item]] <- NA
+    }
+
+    cli::cli_progress_update(id = pb_id, inc = 1)
+  }
+
+  return(batch_results)
 }

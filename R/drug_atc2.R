@@ -1,12 +1,13 @@
-#' Add ATC2 therapeutic classifications to medications
+#' Add ATC classifications to medications
 #'
-#' Retrieves WHO ATC level 2 classifications for medications using RxCUI codes.
-#' Level 2 = therapeutic subgroups (e.g., "lipid modifying agents").
+#' Retrieves WHO ATC classifications for medications using RxCUI codes.
 #'
 #' @param dataf Data frame containing RxCUI values
 #' @param rxcui_col Column with RxCUI values (default: "rxcui")
 #' @param new_col_name Name for new column (default: "atc2_class")
 #' @param unnest Create separate rows for multiple classes (default: FALSE)
+#' @param atc_level ATC level: "first" (anatomical), "second" (therapeutic),
+#'  "third" (pharmacological), or "fourth" (chemical).
 #' @param batch_size RxCUIs per batch (default: 200)
 #' @param save_freq Save cache every N items (default: 50)
 #' @param cache_dir Cache directory (default: "cache")
@@ -14,29 +15,30 @@
 #' @param retry_count Retry attempts (default: 3)
 #' @param batch_delay Seconds between batches (default: 2)
 #'
-#' @return Data frame with ATC2 column added
+#' @return Data frame with ATC column added
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' df <- data.frame(med = c("atorvastatin", "metformin"),
 #'                  rxcui = c("83367", "6809"))
-#' add_atc2_classification(df)
+#' add_atc_classification(df)
 #' }
-add_atc2_classification <- function(dataf,
-                                    rxcui_col = "rxcui",
-                                    new_col_name = "atc2_class",
-                                    unnest = FALSE,
-                                    batch_size = 200,
-                                    save_freq = 50,
-                                    cache_dir = "cache",
-                                    max_age_days = 30,
-                                    retry_count = 3,
-                                    batch_delay = 2) {
+add_atc_classification <- function(dataf,
+                                  rxcui_col = "rxcui",
+                                  new_col_name = "atc2_class",
+                                  unnest = FALSE,
+                                  atc_level,
+                                  batch_size = 200,
+                                  save_freq = 50,
+                                  cache_dir = "cache",
+                                  max_age_days = 30,
+                                  retry_count = 3,
+                                  batch_delay = 2) {
 
   start_time <- Sys.time()
 
-  .validate_atc2_inputs(dataf, rxcui_col, new_col_name, unnest)
+  .validate_atc_inputs(dataf, rxcui_col, new_col_name, unnest, atc_level)
 
   rxcui_info <- .get_unique_rxcuis(dataf, rxcui_col)
 
@@ -56,7 +58,7 @@ add_atc2_classification <- function(dataf,
     retry_count = retry_count,
     batch_delay = batch_delay,
     process_type = "ATC2 classifications",
-    "second"
+    query_atc = atc_level
   )
 
   if (unnest) {
@@ -72,7 +74,7 @@ add_atc2_classification <- function(dataf,
 
 #' @keywords internal
 #' @noRd
-.validate_atc2_inputs <- function(dataf, rxcui_col, new_col_name, unnest) {
+.validate_atc_inputs <- function(dataf, rxcui_col, new_col_name, unnest, atc_level) {
   if (!is.data.frame(dataf) || nrow(dataf) == 0) {
     cli::cli_abort("Input must be a non-empty data frame")
   }
@@ -84,6 +86,9 @@ add_atc2_classification <- function(dataf,
   }
   if (new_col_name %in% names(dataf)) {
     cli::cli_alert_warning("Column '{new_col_name}' will be overwritten")
+  }
+  if (!atc_level %in% c("first", "second", "third", "fourth")) {
+    cli::cli_abort("{.arg atc_level} must be one of: {.val {valid_levels}}")
   }
 }
 
