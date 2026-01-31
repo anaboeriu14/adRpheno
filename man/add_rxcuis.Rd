@@ -8,12 +8,12 @@ add_rxcuis(
   dataf,
   med_column,
   rxcui_column = "rxcui",
-  batch_size = 200,
-  save_freq = 50,
+  batch_size = 500,
+  save_freq = 500,
   cache_dir = "cache",
   max_age_days = 30,
   retry_count = 3,
-  batch_delay = 2
+  batch_delay = 0.5
 )
 }
 \arguments{
@@ -23,9 +23,9 @@ add_rxcuis(
 
 \item{rxcui_column}{Name for new RxCUI column (default: "rxcui")}
 
-\item{batch_size}{Medications per batch (default: 200)}
+\item{batch_size}{Medications per batch (default: 500)}
 
-\item{save_freq}{Save cache every N items (default: 50)}
+\item{save_freq}{Save cache every N items (default: 500)}
 
 \item{cache_dir}{Cache directory (default: "cache")}
 
@@ -33,7 +33,7 @@ add_rxcuis(
 
 \item{retry_count}{Retry attempts (default: 3)}
 
-\item{batch_delay}{Seconds between batches (default: 2)}
+\item{batch_delay}{Seconds between batches (default: 0.5)}
 }
 \value{
 Data frame with RxCUI column added

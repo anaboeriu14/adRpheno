@@ -18,7 +18,7 @@ RxCUI as character, or NA_character_ if not found
 }
 \description{
 Queries RxNorm API using "exact then normalized" matching, which handles
-abbreviations (e.g., "hctz" → "hydrochlorothiazide") without false positives.
+abbreviations (e.g., "hctz" â†’ "hydrochlorothiazide") without false positives.
 }
 \examples{
 \dontrun{

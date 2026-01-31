@@ -4,39 +4,54 @@
 #'
 #' @param dataf Data frame containing RxCUI values
 #' @param rxcui_col Column with RxCUI values (default: "rxcui")
-#' @param new_col_name Name for new column (default: "atc2_class")
+#' @param new_col_name Name for new column (default: auto-generated, e.g., "atc2_class")
 #' @param unnest Create separate rows for multiple classes (default: FALSE)
-#' @param atc_level ATC level: "first" (anatomical), "second" (therapeutic),
-#'  "third" (pharmacological), or "fourth" (chemical).
-#' @param batch_size RxCUIs per batch (default: 200)
-#' @param save_freq Save cache every N items (default: 50)
+#' @param atc_level ATC level: "first", "second" (default), "third", or "fourth"
+#' @param batch_size Items per batch (default: 500)
+#' @param save_freq Save cache every N items (default: 500)
 #' @param cache_dir Cache directory (default: "cache")
 #' @param max_age_days Cache expiration in days (default: 30)
 #' @param retry_count Retry attempts (default: 3)
-#' @param batch_delay Seconds between batches (default: 2)
+#' @param batch_delay Seconds between batches (default: 0.5)
 #'
-#' @return Data frame with ATC column added
+#' @return Data frame with ATC classification column added
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' df <- data.frame(med = c("atorvastatin", "metformin"),
 #'                  rxcui = c("83367", "6809"))
+#'
+#' # Simple usage
 #' add_atc_classification(df)
+#'
+#' # Different level
+#' add_atc_classification(df, atc_level = "third")
 #' }
 add_atc_classification <- function(dataf,
-                                  rxcui_col = "rxcui",
-                                  new_col_name = "atc2_class",
-                                  unnest = FALSE,
-                                  atc_level,
-                                  batch_size = 200,
-                                  save_freq = 50,
-                                  cache_dir = "cache",
-                                  max_age_days = 30,
-                                  retry_count = 3,
-                                  batch_delay = 2) {
+                                   rxcui_col = "rxcui",
+                                   new_col_name = NULL,
+                                   unnest = FALSE,
+                                   atc_level = "second",
+                                   batch_size = 500,
+                                   save_freq = 500,
+                                   cache_dir = "cache",
+                                   max_age_days = 30,
+                                   retry_count = 3,
+                                   batch_delay = 0.5) {
 
   start_time <- Sys.time()
+
+  # Auto-gen column name based on ATC level if not provided
+  if (is.null(new_col_name)) {
+    level_num <- switch(atc_level,
+                        "first" = "1",
+                        "second" = "2",
+                        "third" = "3",
+                        "fourth" = "4",
+                        "2")  # fallback
+    new_col_name <- paste0("atc", level_num, "_class")
+  }
 
   .validate_atc_inputs(dataf, rxcui_col, new_col_name, unnest, atc_level)
 
@@ -47,18 +62,28 @@ add_atc_classification <- function(dataf,
     return(dataf)
   }
 
+  # Create level-specific cache name
+  level_num <- switch(atc_level,
+                      "first" = "1",
+                      "second" = "2",
+                      "third" = "3",
+                      "fourth" = "4",
+                      "2")
+
+  cache_name <- paste0("atc", level_num, "_cache")
+
+  # Process batch with anonymous function that includes atc_level
   rxcui_to_atc2 <- .process_batch(
     items = rxcui_info$unique_rxcuis,
-    api_function = rxnorm::get_atc,
+    api_function = function(rxcui) rxnorm::get_atc(rxcui, query_atc = atc_level),
     batch_size = batch_size,
     save_freq = save_freq,
-    cache_name = "atc2_cache",
+    cache_name = cache_name,
     cache_dir = cache_dir,
     max_age_days = max_age_days,
     retry_count = retry_count,
     batch_delay = batch_delay,
-    process_type = "ATC2 classifications",
-    query_atc = atc_level
+    process_type = paste0("ATC", level_num, " classifications")
   )
 
   if (unnest) {
@@ -87,7 +112,8 @@ add_atc_classification <- function(dataf,
   if (new_col_name %in% names(dataf)) {
     cli::cli_alert_warning("Column '{new_col_name}' will be overwritten")
   }
-  if (!atc_level %in% c("first", "second", "third", "fourth")) {
+  valid_levels <- c("first", "second", "third", "fourth")
+  if (!atc_level %in% valid_levels) {
     cli::cli_abort("{.arg atc_level} must be one of: {.val {valid_levels}}")
   }
 }

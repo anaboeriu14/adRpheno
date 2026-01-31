@@ -37,14 +37,19 @@
   )
 
   # Filter items that need processing, updating progress for cached items
-  items_to_process <- character()
-  cache_results <- list()
+  items_to_process <- vector("character", total_items)
+  cache_results <- vector("list", total_items)
+  names(cache_results) <- items
+  process_idx <- 0
   cached_count <- 0
 
-  for (item in items) {
+  for (i in seq_along(items)) {
+    item <- items[i]
     cached_value <- adRutils::get_from_cache(cache, item, default = NULL, max_age_days = max_age_days)
+
     if (is.null(cached_value)) {
-      items_to_process <- c(items_to_process, item)
+      process_idx <- process_idx + 1
+      items_to_process[process_idx] <- item
     } else {
       cache_results[[item]] <- cached_value
       cached_count <- cached_count + 1
@@ -52,10 +57,19 @@
     }
   }
 
+  # Trim to actual size needed
+  items_to_process <- items_to_process[seq_len(process_idx)]
+
   if (length(items_to_process) == 0) {
     cli::cli_progress_done(id = pb_id)
     cli::cli_alert_success("All {total_items} {process_type} retrieved from cache")
-    return(cache_results[items])
+    return(vapply(cache_results[items], function(x) {
+      if (is.list(x) && length(x) == 1) {
+        as.character(x[[1]])
+      } else {
+        as.character(x)
+      }
+    }, FUN.VALUE = character(1), USE.NAMES = TRUE))
   }
 
   # Show cache statistics
@@ -66,6 +80,9 @@
   # Create batches
   batches <- split(items_to_process, ceiling(seq_along(items_to_process) / batch_size))
   cli::cli_alert_info("Processing {length(items_to_process)} new {process_type} in {length(batches)} batch{?es}")
+
+  # Calculate save frequency in terms of batches
+  save_every_n_batches <- max(1, ceiling(save_freq / batch_size))
 
   # Process each batch
   for (i in seq_along(batches)) {
@@ -80,8 +97,8 @@
       cache_results[[item]] <- batch_results[[item]]
     }
 
-    # Save cache periodically
-    if (i %% save_freq == 0 || i == length(batches)) {
+    # Save cache periodically (every X batches)
+    if (i %% save_every_n_batches == 0 || i == length(batches)) {
       adRutils::save_cache(
         cache = cache,
         cache_name = cache_name,
@@ -102,13 +119,13 @@
 
   cli::cli_alert_success("Processed {length(items_to_process)} new {process_type} ({cached_count} from cache)")
 
-  final_results <- sapply(cache_results[items], function(x) {
+  final_results <- vapply(cache_results[items], function(x) {
     if (is.list(x) && length(x) == 1) {
-      return(as.character(x[[1]]))
+      as.character(x[[1]])
     } else {
-      return(as.character(x))
+      as.character(x)
     }
-  })
+  }, FUN.VALUE = character(1), USE.NAMES = TRUE)
 
   return(final_results)
 }

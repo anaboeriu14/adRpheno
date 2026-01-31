@@ -1,7 +1,7 @@
 #' Get RxCUI for a single medication
 #'
 #' Queries RxNorm API using "exact then normalized" matching, which handles
-#' abbreviations (e.g., "hctz" → "hydrochlorothiazide") without false positives.
+#' abbreviations (e.g., "hctz" â†’ "hydrochlorothiazide") without false positives.
 #'
 #' @param med_name Medication name (ideally an ingredient name)
 #' @param retry_count Retry attempts on failure (default: 3)
@@ -52,12 +52,12 @@ get_single_rxcui <- function(med_name, retry_count = 3, timeout = 10) {
 #' @param dataf Data frame with medication names
 #' @param med_column Column containing medication names
 #' @param rxcui_column Name for new RxCUI column (default: "rxcui")
-#' @param batch_size Medications per batch (default: 200)
-#' @param save_freq Save cache every N items (default: 50)
+#' @param batch_size Medications per batch (default: 500)
+#' @param save_freq Save cache every N items (default: 500)
 #' @param cache_dir Cache directory (default: "cache")
 #' @param max_age_days Cache expiration in days (default: 30)
 #' @param retry_count Retry attempts (default: 3)
-#' @param batch_delay Seconds between batches (default: 2)
+#' @param batch_delay Seconds between batches (default: 0.5)
 #'
 #' @return Data frame with RxCUI column added
 #' @export
@@ -70,12 +70,12 @@ get_single_rxcui <- function(med_name, retry_count = 3, timeout = 10) {
 add_rxcuis <- function(dataf,
                        med_column,
                        rxcui_column = "rxcui",
-                       batch_size = 200,
-                       save_freq = 50,
+                       batch_size = 500,
+                       save_freq = 500,
                        cache_dir = "cache",
                        max_age_days = 30,
                        retry_count = 3,
-                       batch_delay = 2) {
+                       batch_delay = 0.5) {
 
   start_time <- Sys.time()
 
