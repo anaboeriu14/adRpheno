@@ -1,3 +1,23 @@
+# adRpheno 1.1.0
+
+## New Features
+
+- Added `reverse_test_scores()` to cognitive_composites.R for reversing cognitive test scores where 
+higher values indicate worse performance (e.g., Trail Making Test times)
+
+## Changes
+
+- Enhanced documentation for cognitive scoring functions
+- Improved consistency in function naming and parameter validation
+
+## Breaking Changes
+- None
+
+## Bug Fixes
+- None
+
+------------------------------------------------------------------------
+
 # adRpheno 1.0.0
 
 ## Stable Release (2026-01-30)
@@ -43,11 +63,10 @@ None - all existing code remains compatible.
 
 ### Dependencies
 
--   Requires adRutils >= 1.1.0
+-   Requires adRutils \>= 1.1.0
 -   All other dependencies unchanged
 
 ------------------------------------------------------------------------
-
 
 # adRpheno 0.1.0
 
@@ -60,4 +79,4 @@ None - all existing code remains compatible.
 
 ## Dependencies
 
--   Requires adRutils >= 0.1.1
+-   Requires adRutils \>= 0.1.1

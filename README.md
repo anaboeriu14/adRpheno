@@ -1,8 +1,8 @@
 # adRpheno
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/anaboeriu14/adRpheno/releases) [![adRutils](https://img.shields.io/badge/adRutils-≥1.0.0-blue.svg)](https://github.com/anaboeriu14/adRutils) [![License](https://img.shields.io/badge/license-GPL--3-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/anaboeriu14/adRpheno/releases) [![adRutils](https://img.shields.io/badge/adRutils-≥1.0.0-blue.svg)](https://github.com/anaboeriu14/adRutils) [![License](https://img.shields.io/badge/license-GPL--3-blue.svg)](LICENSE)
 
-> ## Tools for Alzheimer's Disease endophenotype analysis
+> ## Tools for Alzheimer's Disease Endophenotype Analysis
 
 ## Overview
 
@@ -112,7 +112,6 @@ See function documentation (`?function_name`) for complete details and examples.
 
 ## Documentation
 
--   [Function Reference](https://github.com/anaboeriu14/adRpheno) - Complete API documentation
 -   [NEWS.md](NEWS.md) - Version history and changelog
 -   [Releases](https://github.com/anaboeriu14/adRpheno/releases) - Release notes
 
@@ -144,7 +143,7 @@ If you use this package in your research, please cite:
 
 ```         
 Boeriu, A. (2026). adRpheno: Tools for Alzheimer's Disease Endophenotype Analysis.
-R package version 1.0.0. https://github.com/anaboeriu14/adRpheno
+R package version 1.1.0. https://github.com/anaboeriu14/adRpheno
 ```
 
 ## License
