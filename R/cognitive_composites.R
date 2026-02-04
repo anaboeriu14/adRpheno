@@ -144,6 +144,66 @@ sum_cognitive_test_components <- function(dataf, component_cols,
 }
 
 
+#' Reverse Direction for Cognitive Tests
+#'
+#' Multiplies specified columns by -1 to reverse score direction. Useful when
+#' combining tests where higher scores have opposite meanings (e.g., time-based
+#' vs. accuracy-based measures).
+#'
+#' @param dataf A data frame containing test scores
+#' @param cols Character vector of column names to reverse
+#' @param suffix Suffix for new reversed columns (default: "_rev")
+#' @param verbose Show informative messages (default: TRUE)
+#'
+#' @return Data frame with added reversed score columns
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Reverse time-based scores before combining with accuracy scores
+#' df <- reverse_scores(df, cols = c("trails_a_time", "trails_b_time"))
+#' }
+reverse_cognitive_scores <- function(dataf, cols, suffix = "_rev", verbose = TRUE) {
+
+  adRutils::validate_params(
+    data = dataf,
+    columns = NULL,
+    custom_checks = list(
+      list(
+        condition = is.character(cols) && length(cols) > 0,
+        message = "{.arg cols} must be a non-empty character vector"
+      ),
+      list(
+        condition = is.character(suffix) && length(suffix) == 1,
+        message = "{.arg suffix} must be a single character string"
+      ),
+      list(
+        condition = is.logical(verbose) && length(verbose) == 1,
+        message = "{.arg verbose} must be TRUE or FALSE"
+      )
+    ),
+    context = "reverse_scores"
+  )
+
+  existing_cols <- intersect(cols, names(dataf))
+
+  if (length(existing_cols) == 0) {
+    if (verbose) cli::cli_alert_warning("No specified columns found in data")
+    return(dataf)
+  }
+
+  for (col in existing_cols) {
+    dataf[[paste0(col, suffix)]] <- dataf[[col]] * -1
+  }
+
+  if (verbose) {
+    cli::cli_alert_success("Reversed {length(existing_cols)} column{?s}")
+  }
+
+  return(dataf)
+}
+
+
 #' Validate test groups structure and column existence
 #' @keywords internal
 .validate_test_groups <- function(test_groups, dataf) {
@@ -222,6 +282,7 @@ sum_cognitive_test_components <- function(dataf, component_cols,
 
 #' Compute composite scores from z-scores
 #' @keywords internal
+#' @noRd
 .compute_cognitive_composites <- function(dataf, test_groups) {
   result_df <- dataf
 
