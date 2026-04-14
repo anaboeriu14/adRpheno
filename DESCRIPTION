@@ -1,6 +1,6 @@
 Package: adRpheno
 Title: Tools for Alzheimer's Disease Endophenotype Analysis
-Version: 1.0.0
+Version: 1.1.1
 Authors@R: 
     person("Ana", "Boeriu", , "ana.boeriu@ucsf.edu", role = c("aut", "cre"))
 Description: Tools for standardizing and analyzing Alzheimer's Disease (AD) 

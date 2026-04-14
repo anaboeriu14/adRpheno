@@ -1,20 +1,36 @@
+# adRpheno 1.1.1
+
+## Bug Fixes
+
+-   Fixed `calculate_egfr()` silently accepting invalid sex columns (e.g., race factors) due to R's implicit factor-to-integer coercion, producing incorrect eGFR values
+-   Added .parse_sex() helper to normalize sex encodings (0/1, m/f, male/female) with clear error messages for unrecognized values
+
+## Changes
+- None
+
+## Breaking Changes
+
+- None
+------------------------------------------------------------------------
+
 # adRpheno 1.1.0
 
 ## New Features
 
-- Added `reverse_test_scores()` to cognitive_composites.R for reversing cognitive test scores where 
-higher values indicate worse performance (e.g., Trail Making Test times)
+-   Added `reverse_test_scores()` to cognitive_composites.R for reversing cognitive test scores where higher values indicate worse performance (e.g., Trail Making Test times)
 
 ## Changes
 
-- Enhanced documentation for cognitive scoring functions
-- Improved consistency in function naming and parameter validation
+-   Enhanced documentation for cognitive scoring functions
+-   Improved consistency in function naming and parameter validation
 
 ## Breaking Changes
-- None
+
+-   None
 
 ## Bug Fixes
-- None
+
+-   None
 
 ------------------------------------------------------------------------
 

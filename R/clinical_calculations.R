@@ -209,6 +209,18 @@ calculate_egfr <- function(dataf, creatinine_col, age_col, sex_col,
     context = "calculate_egfr"
   )
 
+  # Parse and validate sex values
+  sex_numeric <- .parse_sex(dataf[[sex_col]])
+
+  unparsed <- is.na(sex_numeric) & !is.na(dataf[[sex_col]])
+  if (any(unparsed)) {
+    bad_vals <- unique(dataf[[sex_col]][unparsed])
+    cli::cli_abort(c(
+      "{.arg sex_col} column {.val {sex_col}} contains unrecognized values: {.val {bad_vals}}",
+      "i" = "Accepted values: 0/1, 'm'/'f', 'male'/'female' (case-insensitive)"
+    ))
+  }
+
   # Check if already processed
   if (egfr_col %in% names(dataf)) {
     if (verbose) {
@@ -218,10 +230,10 @@ calculate_egfr <- function(dataf, creatinine_col, age_col, sex_col,
 
   if (verbose) cli::cli_alert_info("Calculating eGFR using CKD-EPI 2021 formula")
 
-  # CKD-EPI constants based on sex
-  kappa <- ifelse(dataf[[sex_col]] == 1, 0.7, 0.9)
-  alpha <- ifelse(dataf[[sex_col]] == 1, -0.241, -0.302)
-  sex_factor <- ifelse(dataf[[sex_col]] == 1, 1.012, 1)
+  # CKD-EPI constants based on sex (1 = female, 0 = male)
+  kappa <- ifelse(sex_numeric == 1, 0.7, 0.9)
+  alpha <- ifelse(sex_numeric == 1, -0.241, -0.302)
+  sex_factor <- ifelse(sex_numeric == 1, 1.012, 1)
 
   # Calculate eGFR
   dataf[[egfr_col]] <- 142 *
@@ -252,4 +264,27 @@ calculate_egfr <- function(dataf, creatinine_col, age_col, sex_col,
   )
 
   c(base_outputs, optional_outputs)
+}
+
+
+#' Parse sex values from various formats to numeric (0 = male, 1 = female)
+#'
+#' Converts common sex encodings to the 0/1 format expected by clinical
+#' calculations. Returns NA for unrecognized values (preserving original NAs).
+#'
+#' @param sex_values Vector of sex values (numeric, character, or factor)
+#' @return Numeric vector: 0 = male, 1 = female, NA = missing/unrecognized
+#' @keywords internal
+.parse_sex <- function(sex_values) {
+  sex_char <- tolower(as.character(sex_values))
+
+  female_vals <- c("1", "f", "female")
+  male_vals <- c("0", "m", "male")
+
+  dplyr::case_when(
+    is.na(sex_values) ~ NA_real_,
+    sex_char %in% female_vals ~ 1,
+    sex_char %in% male_vals ~ 0,
+    TRUE ~ NA_real_
+  )
 }
