@@ -4,60 +4,53 @@
 #' calculates composite scores for specified test groups.
 #'
 #' @param dataf A data frame containing raw test scores and demographic information
-#' @param test_groups Named list of character vectors for each test group
+#' @param test_groups Named list of character vectors, one per composite group.
+#'   Each element names the columns to include in that group's composite.
 #' @param grouping_vars Character vector of demographic grouping columns
-#' @param filters Named list of filtering conditions (optional)
+#' @param filters Optional named list of string filter expressions evaluated
+#'   against `dataf` (e.g. `list(diagnosis = "diagnosis == 'CN'")`)
 #' @param digits Integer for decimal places (default: 3)
-#' @param verbose Logical. Show informative messages (default: TRUE)
+#' @param verbose Logical. Show informative messages (default: `TRUE`)
 #'
-#' @return Data frame with z-scores and composite scores
+#' @return Data frame with added z-score columns (`zscore_{var}_{group}`) and
+#'   composite columns (`{group}_comp_score`).
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' test_groups <- list(
-#'   memory = c("LM1", "LM2", "SEVLT_imm"),
+#'   memory    = c("LM1", "LM2", "SEVLT_imm"),
 #'   executive = c("digit_span", "trails_a")
 #' )
 #'
 #' result <- create_adjusted_composites(
-#'   dataf = my_data,
-#'   test_groups = test_groups,
+#'   dataf         = my_data,
+#'   test_groups   = test_groups,
 #'   grouping_vars = c("age_group", "edu_group")
 #' )
 #' }
 create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
                                        filters = NULL, digits = 3, verbose = TRUE) {
 
-  # Validate inputs
   all_tests <- .validate_test_groups(test_groups, dataf)
 
-  adRutils::validate_params(
-    data = dataf,
-    columns = c(grouping_vars, all_tests),
+  adRutils::validate_args(
+    data            = dataf,
+    columns         = c(grouping_vars, all_tests),
     numeric_columns = all_tests,
-    custom_checks = list(
-      list(condition = is.numeric(digits) && length(digits) == 1 && digits >= 0,
-           message = "{.arg digits} must be a single non-negative number"),
-      list(condition = is.logical(verbose) && length(verbose) == 1,
-           message = "{.arg verbose} must be TRUE or FALSE"),
+    grouping_vars   = adRutils::is_nonempty_character(),
+    digits          = adRutils::is_number(min = 0),
+    verbose         = adRutils::is_flag(),
+    custom_checks   = list(
       list(condition = is.null(filters) || is.list(filters),
-           message = "{.arg filters} must be NULL or a named list")
-    ),
-    context = "create_adjusted_composites"
+           message   = "{.arg filters} must be NULL or a named list")
+    )
   )
-
-  # Check if outputs already exist
-  expected_outputs <- .get_expected_composite_outputs(test_groups)
-  if (.outputs_exist(dataf, expected_outputs) && verbose) {
-    cli::cli_alert_info("Composite score outputs already exist. Results may be overwritten.")
-  }
 
   if (verbose) {
     cli::cli_alert_info("Creating adjusted composites for {length(test_groups)} test group{?s}")
   }
 
-  # Apply filters and compute
   result_df <- dataf %>%
     .apply_filters(filters) %>%
     .compute_cognitive_zscores(test_groups, grouping_vars) %>%
@@ -68,7 +61,7 @@ create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
     cli::cli_alert_success("Created {length(test_groups)} composite score{?s}")
   }
 
-  return(result_df)
+  result_df
 }
 
 
@@ -78,10 +71,10 @@ create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
 #'
 #' @param dataf A data frame containing test component columns
 #' @param component_cols Character vector of column names to combine
-#' @param result_col Name for new total score column (default: "total_score")
-#' @param method Combination method: "sum" or "mean" (default: "sum")
-#' @param na.rm Remove NA values when combining (default: TRUE)
-#' @param verbose Show informative messages (default: TRUE)
+#' @param result_col Name for new total score column (default: `"total_score"`)
+#' @param method Combination method: `"sum"` or `"mean"` (default: `"sum"`)
+#' @param na.rm Remove `NA` values when combining (default: `TRUE`)
+#' @param verbose Show informative messages (default: `TRUE`)
 #'
 #' @return Data frame with added total score column
 #' @export
@@ -89,9 +82,9 @@ create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
 #' @examples
 #' \dontrun{
 #' result <- sum_cognitive_test_components(
-#'   dataf = my_data,
+#'   dataf          = my_data,
 #'   component_cols = c("trails_a_time", "trails_b_time"),
-#'   result_col = "trails_total"
+#'   result_col     = "trails_total"
 #' )
 #' }
 sum_cognitive_test_components <- function(dataf, component_cols,
@@ -99,33 +92,27 @@ sum_cognitive_test_components <- function(dataf, component_cols,
                                           method = "sum", na.rm = TRUE,
                                           verbose = TRUE) {
 
-  adRutils::validate_params(
-    data = dataf,
-    columns = component_cols,
+  adRutils::validate_args(
+    data            = dataf,
+    columns         = component_cols,
     numeric_columns = component_cols,
-    custom_checks = list(
-      list(condition = method %in% c("sum", "mean"),
-           message = "{.arg method} must be 'sum' or 'mean'"),
-      list(condition = is.logical(na.rm) && length(na.rm) == 1,
-           message = "{.arg na.rm} must be TRUE or FALSE"),
-      list(condition = is.logical(verbose) && length(verbose) == 1,
-           message = "{.arg verbose} must be TRUE or FALSE"),
-      list(condition = is.character(result_col) && length(result_col) == 1,
-           message = "{.arg result_col} must be a single character string")
-    ),
-    context = "sum_cognitive_test_components"
+    component_cols  = adRutils::is_nonempty_character(),
+    result_col      = adRutils::is_string(),
+    method          = adRutils::is_one_of(c("sum", "mean")),
+    na.rm           = adRutils::is_flag(),
+    verbose         = adRutils::is_flag()
   )
 
-  # Check if output already exists
   if (result_col %in% names(dataf) && verbose) {
-    cli::cli_alert_info("Column '{result_col}' already exists and will be overwritten.")
+    cli::cli_alert_info("Column '{result_col}' already exists and will be overwritten")
   }
 
   if (verbose) {
-    cli::cli_alert_info("Creating '{result_col}' using {method} of {length(component_cols)} component{?s}")
+    cli::cli_alert_info(
+      "Creating '{result_col}' using {method} of {length(component_cols)} component{?s}"
+    )
   }
 
-  # Compute total
   aggregate_fn <- if (method == "sum") rowSums else rowMeans
 
   result <- dataf %>%
@@ -140,72 +127,15 @@ sum_cognitive_test_components <- function(dataf, component_cols,
     cli::cli_alert_success("Created column '{result_col}'")
   }
 
-  return(result)
+  result
 }
 
 
-#' Reverse Direction for Cognitive Tests
-#'
-#' Multiplies specified columns by -1 to reverse score direction. Useful when
-#' combining tests where higher scores have opposite meanings (e.g., time-based
-#' vs. accuracy-based measures).
-#'
-#' @param dataf A data frame containing test scores
-#' @param cols Character vector of column names to reverse
-#' @param suffix Suffix for new reversed columns (default: "_rev")
-#' @param verbose Show informative messages (default: TRUE)
-#'
-#' @return Data frame with added reversed score columns
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' # Reverse time-based scores before combining with accuracy scores
-#' df <- reverse_scores(df, cols = c("trails_a_time", "trails_b_time"))
-#' }
-reverse_cognitive_scores <- function(dataf, cols, suffix = "_rev", verbose = TRUE) {
-
-  adRutils::validate_params(
-    data = dataf,
-    columns = NULL,
-    custom_checks = list(
-      list(
-        condition = is.character(cols) && length(cols) > 0,
-        message = "{.arg cols} must be a non-empty character vector"
-      ),
-      list(
-        condition = is.character(suffix) && length(suffix) == 1,
-        message = "{.arg suffix} must be a single character string"
-      ),
-      list(
-        condition = is.logical(verbose) && length(verbose) == 1,
-        message = "{.arg verbose} must be TRUE or FALSE"
-      )
-    ),
-    context = "reverse_scores"
-  )
-
-  existing_cols <- intersect(cols, names(dataf))
-
-  if (length(existing_cols) == 0) {
-    if (verbose) cli::cli_alert_warning("No specified columns found in data")
-    return(dataf)
-  }
-
-  for (col in existing_cols) {
-    dataf[[paste0(col, suffix)]] <- dataf[[col]] * -1
-  }
-
-  if (verbose) {
-    cli::cli_alert_success("Reversed {length(existing_cols)} column{?s}")
-  }
-
-  return(dataf)
-}
-
+# ---- internal helpers ------------------------------------------------------
 
 #' Validate test groups structure and column existence
 #' @keywords internal
+#' @noRd
 .validate_test_groups <- function(test_groups, dataf) {
   if (!is.list(test_groups) || is.null(names(test_groups))) {
     cli::cli_abort("{.arg test_groups} must be a named list of character vectors")
@@ -214,37 +144,16 @@ reverse_cognitive_scores <- function(dataf, cols, suffix = "_rev", verbose = TRU
   all_tests <- unlist(test_groups)
   missing_cols <- setdiff(all_tests, colnames(dataf))
 
-  if (length(missing_cols) > 0) {
-    cli::cli_abort("Missing test columns: {paste(missing_cols, collapse = ', ')}")
+  if (length(missing_cols) > 0L) {
+    cli::cli_abort("Missing test column{?s}: {.val {missing_cols}}")
   }
 
-  return(all_tests)
+  all_tests
 }
 
-#' Check if expected output columns already exist
+#' Apply string-expression filters to a data frame
 #' @keywords internal
-.outputs_exist <- function(dataf, expected_outputs) {
-  return(all(expected_outputs %in% names(dataf)))
-}
-
-#' Get expected output columns for composite scores
-#' @keywords internal
-.get_expected_composite_outputs <- function(test_groups) {
-  output_cols <- c()
-
-  for (group_name in names(test_groups)) {
-    # Z-score columns for this group
-    zscore_cols <- paste0("zscore_", test_groups[[group_name]], "_", group_name)
-    # Composite column
-    composite_col <- paste0(group_name, "_comp_score")
-    output_cols <- c(output_cols, zscore_cols, composite_col)
-  }
-
-  return(output_cols)
-}
-
-#' Apply filters to data frame
-#' @keywords internal
+#' @noRd
 .apply_filters <- function(dataf, filters) {
   if (is.null(filters)) return(dataf)
 
@@ -253,16 +162,22 @@ reverse_cognitive_scores <- function(dataf, cols, suffix = "_rev", verbose = TRU
     dataf <- dataf[eval(parse(text = filter_expr), dataf), ]
   }
 
-  return(dataf)
+  dataf
 }
 
-#' Compute z-scores grouped by demographic variables for cognitive variables
+#' Compute group-wise z-scores for each test group
+#'
+#' Note: this is intentionally separate from the public [compute_zscores()].
+#' The output naming `zscore_{var}_{group_name}` is required by
+#' [create_adjusted_composites()] to disambiguate when the same test column
+#' appears in multiple test groups; `compute_zscores()` uses a single-prefix
+#' scheme that would collide in that case.
 #' @keywords internal
+#' @noRd
 .compute_cognitive_zscores <- function(dataf, test_groups, grouping_vars) {
   result_df <- dataf %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(grouping_vars)))
 
-  # Calculate z-scores for each test group
   for (group_name in names(test_groups)) {
     cols <- test_groups[[group_name]]
     suffix <- paste0("_", group_name)
@@ -271,16 +186,16 @@ reverse_cognitive_scores <- function(dataf, cols, suffix = "_rev", verbose = TRU
       dplyr::mutate(
         dplyr::across(
           dplyr::all_of(cols),
-          ~scale(., center = TRUE, scale = TRUE)[, 1],
+          ~as.vector(scale(.x)),
           .names = "zscore_{.col}{suffix}"
         )
       )
   }
 
-  return(result_df %>% dplyr::ungroup())
+  result_df %>% dplyr::ungroup()
 }
 
-#' Compute composite scores from z-scores
+#' Compute composite scores from per-group z-scores
 #' @keywords internal
 #' @noRd
 .compute_cognitive_composites <- function(dataf, test_groups) {
@@ -288,11 +203,9 @@ reverse_cognitive_scores <- function(dataf, cols, suffix = "_rev", verbose = TRU
 
   for (group_name in names(test_groups)) {
     composite_name <- paste0(group_name, "_comp_score")
-    zscore_cols <- paste0("zscore_", test_groups[[group_name]], "_", group_name)
-
-    # Use base R indexing
+    zscore_cols    <- paste0("zscore_", test_groups[[group_name]], "_", group_name)
     result_df[[composite_name]] <- rowMeans(result_df[zscore_cols], na.rm = TRUE)
   }
 
-  return(result_df)
+  result_df
 }
