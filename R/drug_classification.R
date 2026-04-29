@@ -3,33 +3,51 @@
 #' Adds binary indicator columns for medication categories based on pattern
 #' matching in medication names and/or ATC codes.
 #'
-#' @param dataf Data frame with medication data
-#' @param med_col Column with medication names
-#' @param atc_col Column with ATC codes/names (optional)
-#' @param categories Named list of patterns for each category (see Details)
-#' @param prefix Prefix for output columns (default: "is_")
-#' @param suffix Suffix for output columns (default: "_med")
+#' Patterns are matched as whole words (`\b...\b`) using `grepl()` with
+#' `ignore.case = TRUE`. Patterns are interpreted as **regular expressions**:
+#' regex metacharacters (`.`, `+`, `*`, `(`, `)`, `[`, `]`, `?`, `^`, `$`,
+#' `|`, `\\`) inside a pattern have their usual regex meaning. To match a
+#' literal metacharacter, escape it (e.g. `"hmg-coa\\."`). Plain word
+#' patterns like `"statin"` need no escaping.
 #'
-#' @return Data frame with binary category columns added
+#' @param dataf Data frame with medication data.
+#' @param med_col Column with medication names.
+#' @param atc_col Column with ATC codes/names. Optional; if supplied, a
+#'   match in either `med_col` or `atc_col` flags the row.
+#' @param categories Named list of pattern vectors. If `NULL` (default), uses
+#'   built-in cardiometabolic categories (cholesterol, diabetes, hypertension).
+#'   Supply your own list for any other therapeutic grouping.
+#' @param prefix Prefix for output column names (default: `"is_"`).
+#' @param suffix Suffix for output column names (default: `"_med"`).
+#'
+#' @return The input data frame with one binary (0/1) column per category.
 #' @export
 #'
 #' @details
-#' Each category is a character vector of patterns to match (case-insensitive).
-#' Patterns are matched as whole words using word boundaries.
+#' The built-in defaults assume `atc_col` (when supplied) contains
+#' second-level ATC class names, i.e. the output of [add_atc_classification()]
+#' with `atc_level = "second"`. They mix exact ATC2 class names with common
+#' generic-name patterns so they match against either column.
 #'
-#' Default categories are:
-#' - **cholesterol**: lipid modifying agents, statin(s)
-#' - **diabetes**: drugs used in diabetes
-#' - **hypertension**: renin-angiotensin, calcium channel blockers, diuretics, beta blockers
+#' Default categories:
+#' - **cholesterol**: lipid modifying agents, statins
+#' - **diabetes**: drugs used in diabetes, blood glucose lowering agents,
+#'   antidiabetics
+#' - **hypertension**: renin-angiotensin agents, calcium channel blockers,
+#'   diuretics, beta blockers, antihypertensives
+#'
+#' For other therapeutic groups, or for matching against a different ATC
+#' level, supply `categories` explicitly.
 #'
 #' @examples
 #' \dontrun{
-#' # Use defaults
-#' df <- categorize_drugs(df, med_col = "medication", atc_col = "atc2")
+#' # Use defaults (cardiometabolic, ATC2-aware)
+#' df <- categorize_drugs(df, med_col = "medication", atc_col = "atc2_class")
 #'
+#' # Custom categories
 #' my_cats <- list(
-#'   anticoagulant = c("warfarin", "apixaban", "rivaroxaban"),
-#'   antidepressant = c("ssri", "snri", "sertraline", "fluoxetine")
+#'   anticoagulant  = c("antithrombotic agents", "warfarin", "apixaban", "rivaroxaban"),
+#'   antidepressant = c("antidepressants", "ssri", "sertraline", "fluoxetine")
 #' )
 #' df <- categorize_drugs(df, med_col = "medication", categories = my_cats)
 #' }
@@ -40,48 +58,47 @@ categorize_drugs <- function(dataf,
                              prefix = "is_",
                              suffix = "_med") {
 
-  .validate_categorize_inputs(dataf, med_col, atc_col, categories)
+  required_cols <- c(med_col, if (!is.null(atc_col)) atc_col)
+
+  adRutils::validate_args(
+    data          = dataf,
+    columns       = required_cols,
+    med_col       = adRutils::is_string(),
+    prefix        = adRutils::is_string(),
+    suffix        = adRutils::is_string(),
+    custom_checks = list(
+      list(condition = is.null(atc_col) || (is.character(atc_col) && length(atc_col) == 1L),
+           message   = "{.arg atc_col} must be NULL or a single string"),
+      list(condition = is.null(categories) || (is.list(categories) && !is.null(names(categories))),
+           message   = "{.arg categories} must be NULL or a named list")
+    )
+  )
 
   if (is.null(categories)) {
-    categories <- .get_default_categories()
+    categories <- .get_default_drug_categories()
   }
 
   for (cat_name in names(categories)) {
     col_name <- paste0(prefix, cat_name, suffix)
-    patterns <- categories[[cat_name]]
-
-    dataf[[col_name]] <- .match_category(dataf, med_col, atc_col, patterns)
+    dataf[[col_name]] <- .match_category(dataf, med_col, atc_col,
+                                         categories[[cat_name]])
   }
 
-  return(dataf)
-}
-
-#' @keywords internal
-#' @noRd
-.validate_categorize_inputs <- function(dataf, med_col, atc_col, categories) {
-  if (!is.data.frame(dataf) || nrow(dataf) == 0) {
-    cli::cli_abort("Input must be a non-empty data frame")
-  }
-  if (!med_col %in% names(dataf)) {
-    cli::cli_abort("Column '{med_col}' not found")
-  }
-  if (!is.null(atc_col) && !atc_col %in% names(dataf)) {
-    cli::cli_abort("Column '{atc_col}' not found")
-  }
-  if (!is.null(categories) && (!is.list(categories) || is.null(names(categories)))) {
-    cli::cli_abort("{.arg categories} must be a named list")
-  }
+  dataf
 }
 
 
+#' Built-in default cardiometabolic categories (ATC2-aware)
+#'
+#' Patterns target second-level ATC class names where possible, with
+#' generic-name fallbacks for matches against medication-name columns.
 #' @keywords internal
 #' @noRd
-.get_default_categories <- function() {
+.get_default_drug_categories <- function() {
   list(
     cholesterol = c(
       "lipid modifying agents",
-      "statin", "statins",
-      "hmg-coa reductase inhibitor"
+      "statin", "statins"
     ),
     diabetes = c(
       "drugs used in diabetes",
@@ -98,23 +115,19 @@ categorize_drugs <- function(dataf,
   )
 }
 
-
+#' Match a set of patterns across one or two text columns
 #' @keywords internal
 #' @noRd
 .match_category <- function(dataf, med_col, atc_col, patterns) {
-  # Build regex: match any pattern as whole word
   regex <- paste0("\\b(", paste(patterns, collapse = "|"), ")\\b")
 
-  # Match in med_col
   med_match <- grepl(regex, dataf[[med_col]], ignore.case = TRUE)
   med_match[is.na(dataf[[med_col]])] <- FALSE
 
-  # Match in atc_col if provided
-  if (!is.null(atc_col)) {
-    atc_match <- grepl(regex, dataf[[atc_col]], ignore.case = TRUE)
-    atc_match[is.na(dataf[[atc_col]])] <- FALSE
-    return(as.integer(med_match | atc_match))
-  }
+  if (is.null(atc_col)) return(as.integer(med_match))
 
-  as.integer(med_match)
+  atc_match <- grepl(regex, dataf[[atc_col]], ignore.case = TRUE)
+  atc_match[is.na(dataf[[atc_col]])] <- FALSE
+
+  as.integer(med_match | atc_match)
 }

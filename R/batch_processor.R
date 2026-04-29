@@ -2,7 +2,12 @@
 #'
 #' Internal orchestration helper that wraps an `api_function` (one call per
 #' item) with on-disk caching ([initialize_cache()] et al.), batched
-#' processing, retry-on-failure, and a `cli` progress bar.
+#' processing, retry-on-failure with exponential backoff, and a `cli`
+#' progress bar.
+#'
+#' Retries: failed calls are retried up to `retry_count` times with backoff
+#' `0.5 * 2^(attempt - 1)` seconds (0.5s, 1s, 2s, ...). `api_function` should
+#' raise an error or return `NULL` to signal failure.
 #'
 #' @param items Character vector of items to process.
 #' @param api_function Function that processes a single item. Must accept the
@@ -17,7 +22,9 @@
 #' @param process_type Description for progress messages (default: `"items"`).
 #' @param ... Additional arguments passed to `api_function`.
 #'
-#' @return Named character vector of results, one entry per input item.
+#' @return Named list of results, one entry per input item. List shape
+#'   (rather than character vector) lets `api_function` return scalars,
+#'   vectors, or `NULL` per item; callers flatten to their preferred shape.
 #' @keywords internal
 #' @noRd
 .process_batch <- function(items, api_function, batch_size = 200, save_freq = 50,
@@ -25,7 +32,6 @@
                            max_age_days = 30, retry_count = 3, batch_delay = 2,
                            process_type = "items", ...) {
 
-  # Initialize and (if needed) clean the cache
   cache <- initialize_cache(cache_name, cache_dir)
   if (is_cache_expired(cache, max_age_days)) {
     cache <- clean_cache(cache, max_age_days)
@@ -33,7 +39,6 @@
 
   total_items <- length(items)
 
-  # Single progress bar covers cached + new items
   pb_id <- cli::cli_progress_bar(
     format = paste0("Processing ", process_type,
                     " [{cli::pb_bar}] {cli::pb_current}/{cli::pb_total}"),
@@ -41,25 +46,21 @@
     clear  = FALSE
   )
 
-  # Partition items into "already cached" vs "needs processing", advancing
-  # the progress bar for each cached hit.
   partition <- .partition_items_by_cache(items, cache, max_age_days, pb_id)
-  cache_results   <- partition$cache_results
+  cache_results    <- partition$cache_results
   items_to_process <- partition$items_to_process
   cached_count     <- partition$cached_count
 
-  # Fast path: everything was cached
   if (length(items_to_process) == 0L) {
     cli::cli_progress_done(id = pb_id)
     cli::cli_alert_success("All {total_items} {process_type} retrieved from cache")
-    return(.flatten_results(cache_results, items))
+    return(cache_results[items])
   }
 
   if (cached_count > 0L) {
     cli::cli_alert_info("{cached_count}/{total_items} {process_type} found in cache")
   }
 
-  # Split remaining items into batches and process
   batches <- split(items_to_process,
                    ceiling(seq_along(items_to_process) / batch_size))
   cli::cli_alert_info(
@@ -91,9 +92,11 @@
     "Processed {length(items_to_process)} new {process_type} ({cached_count} from cache)"
   )
 
-  .flatten_results(cache_results, items)
+  cache_results[items]
 }
 
+
+# ---- internal helpers ------------------------------------------------------
 
 #' Partition items into cached and to-process, advancing progress bar
 #' @keywords internal
@@ -130,39 +133,18 @@
 }
 
 
-#' Process a single batch with retry logic
+#' Process a single batch with retry-on-error and exponential backoff
+#'
+#' For each item, attempts up to `retry_count` calls. On failure, waits
+#' `0.5 * 2^(attempt - 1)` seconds before retrying. After exhausting retries,
+#' stores `NA` for that item and emits a warning.
 #' @keywords internal
 #' @noRd
 .process_one_batch <- function(batch, api_function, retry_count, pb_id, ...) {
   batch_results <- list()
 
   for (item in batch) {
-    result <- NULL
-    attempts <- 0L
-
-    while (is.null(result) && attempts < retry_count) {
-      attempts <- attempts + 1L
-      tryCatch({
-        result <- api_function(item, ...)
-        if (!is.null(result)) {
-          batch_results[[item]] <- result
-        }
-      }, error = function(e) {
-        if (attempts == retry_count) {
-          cli::cli_alert_warning(
-            "Failed to process {.strong {item}} after {retry_count} attempts: {e$message}"
-          )
-          batch_results[[item]] <<- NA
-        } else {
-          Sys.sleep(1)
-        }
-      })
-    }
-
-    if (is.null(result)) {
-      batch_results[[item]] <- NA
-    }
-
+    batch_results[[item]] <- .call_with_retry(api_function, item, retry_count, ...)
     cli::cli_progress_update(id = pb_id, inc = 1L)
   }
 
@@ -170,18 +152,29 @@
 }
 
 
-#' Coerce per-item cache results into a named character vector
-#'
-#' Some api_functions return single-element lists; this collapses them and
-#' guarantees a flat character vector preserving the requested item order.
+#' Call `api_function(item, ...)` with bounded retries and exponential backoff
 #' @keywords internal
 #' @noRd
-.flatten_results <- function(cache_results, items) {
-  vapply(cache_results[items], function(x) {
-    if (is.list(x) && length(x) == 1L) {
-      as.character(x[[1]])
-    } else {
-      as.character(x)
+.call_with_retry <- function(api_function, item, retry_count, ...) {
+  for (attempt in seq_len(retry_count)) {
+    result <- tryCatch(
+      api_function(item, ...),
+      error = function(e) {
+        if (attempt == retry_count) {
+          cli::cli_alert_warning(
+            "Failed to process {.strong {item}} after {retry_count} attempts: {e$message}"
+          )
+        }
+        NULL
+      }
+    )
+
+    if (!is.null(result)) return(result)
+
+    if (attempt < retry_count) {
+      Sys.sleep(0.5 * 2^(attempt - 1L))
     }
-  }, FUN.VALUE = character(1), USE.NAMES = TRUE)
+  }
+
+  NA
 }
