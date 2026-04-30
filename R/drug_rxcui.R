@@ -141,8 +141,6 @@ add_rxcuis <- function(dataf,
 }
 
 
-# ---- internal helpers ------------------------------------------------------
-
 #' Build an RxNav REST URL for a name lookup
 #' @keywords internal
 #' @noRd
