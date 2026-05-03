@@ -1,7 +1,7 @@
 #' Process items in batches with caching, retry, and progress reporting
 #'
 #' Internal orchestration helper that wraps an `api_function` (one call per
-#' item) with on-disk caching ([initialize_cache()] et al.), batched
+#' item) with on-disk caching (`initialize_cache()`), batched
 #' processing, retry-on-failure with exponential backoff, and a `cli`
 #' progress bar.
 #'

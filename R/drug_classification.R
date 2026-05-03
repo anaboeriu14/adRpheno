@@ -10,6 +10,14 @@
 #' literal metacharacter, escape it (e.g. `"hmg-coa\\."`). Plain word
 #' patterns like `"statin"` need no escaping.
 #'
+#' Because matches are anchored at word boundaries, a pattern like
+#' `"statin"` matches the standalone word `"statin"` (or the plural form
+#' `"statins"` if listed) but **not** generic names that contain it as a
+#' suffix (e.g. `"atorvastatin"`). This is intentional: it prevents false
+#' positives when patterns are short common substrings. To match drugs by
+#' generic name, supply explicit patterns (e.g. `"atorvastatin"`,
+#' `"rosuvastatin"`) or rely on the ATC class column instead.
+#'
 #' @param dataf Data frame with medication data.
 #' @param med_col Column with medication names.
 #' @param atc_col Column with ATC codes/names. Optional; if supplied, a
@@ -17,8 +25,10 @@
 #' @param categories Named list of pattern vectors. If `NULL` (default), uses
 #'   built-in cardiometabolic categories (cholesterol, diabetes, hypertension).
 #'   Supply your own list for any other therapeutic grouping.
-#' @param prefix Prefix for output column names (default: `"is_"`).
-#' @param suffix Suffix for output column names (default: `"_med"`).
+#' @param prefix Prefix for output column names (default: `"is_"`). Empty
+#'   string allowed.
+#' @param suffix Suffix for output column names (default: `"_med"`). Empty
+#'   string allowed.
 #'
 #' @return The input data frame with one binary (0/1) column per category.
 #' @export
@@ -64,9 +74,11 @@ categorize_drugs <- function(dataf,
     data          = dataf,
     columns       = required_cols,
     med_col       = adRutils::is_string(),
-    prefix        = adRutils::is_string(),
-    suffix        = adRutils::is_string(),
     custom_checks = list(
+      list(condition = is.character(prefix) && length(prefix) == 1L,
+           message   = "{.arg prefix} must be a single string (empty allowed)"),
+      list(condition = is.character(suffix) && length(suffix) == 1L,
+           message   = "{.arg suffix} must be a single string (empty allowed)"),
       list(condition = is.null(atc_col) || (is.character(atc_col) && length(atc_col) == 1L),
            message   = "{.arg atc_col} must be NULL or a single string"),
       list(condition = is.null(categories) || (is.list(categories) && !is.null(names(categories))),

@@ -16,15 +16,17 @@ classify_apoe_risk_groups(
 
 \item{genotype_col}{Character. Name of the genotype column}
 
-\item{group_col}{Character. Name for new risk group column (default: "apoe_risk_group")}
+\item{group_col}{Character. Name for new risk group column
+(default: \code{"apoe_risk_group"})}
 
-\item{verbose}{Logical. Show informative messages (default: TRUE)}
+\item{verbose}{Logical. Show informative messages (default: \code{TRUE})}
 }
 \value{
 Data frame with added risk group column (factor)
 }
 \description{
 Creates risk categories: e2+ (protective), e3/e3 (reference), e4+ (increased risk).
+If \code{group_col} already exists in \code{dataf}, it is overwritten with a warning.
 }
 \examples{
 \dontrun{

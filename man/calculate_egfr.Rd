@@ -16,28 +16,30 @@ calculate_egfr(
 \arguments{
 \item{dataf}{A data frame containing the input data}
 
-\item{creatinine_col}{String specifying column name for serum creatinine in mg/dL}
+\item{creatinine_col}{String. Column name for serum creatinine in mg/dL}
 
-\item{age_col}{String specifying column name for age in years}
+\item{age_col}{String. Column name for age in years}
 
-\item{sex_col}{String specifying column name for sex (0 for male, 1 for female)}
+\item{sex_col}{String. Column name for sex. Accepts 0/1, "m"/"f",
+"male"/"female" (case-insensitive). 1/female = female; 0/male = male.}
 
-\item{egfr_col}{Character string for output column name (default: "eGFR")}
+\item{egfr_col}{String. Output column name (default: \code{"eGFR"})}
 
-\item{verbose}{Logical. If TRUE, shows informative messages (default: TRUE)}
+\item{verbose}{Logical. If \code{TRUE}, shows informative messages (default: \code{TRUE})}
 }
 \value{
 Data frame with added eGFR column
 }
 \description{
-Calculates eGFR using the CKD-EPI formula based on serum creatinine, age,
-and sex.
+Calculates eGFR using the CKD-EPI 2021 formula based on serum creatinine,
+age, and sex.
 }
 \details{
-Uses the CKD-EPI (Chronic Kidney Disease Epidemiology Collaboration) equation.
-For females: eGFR = 142 × min(SCr/κ, 1)^α × max(SCr/κ, 1)^(-1.200) × 0.9938^age × 1.012
-For males: eGFR = 142 × min(SCr/κ, 1)^α × max(SCr/κ, 1)^(-1.200) × 0.9938^age × 1
-where κ is 0.7 for females and 0.9 for males; α is -0.241 for females and -0.302 for males
+Uses the CKD-EPI (Chronic Kidney Disease Epidemiology Collaboration) 2021
+equation:
+\code{eGFR = 142 * min(SCr/k, 1)^a * max(SCr/k, 1)^-1.200 * 0.9938^age * S}
+where for females \verb{k = 0.7, a = -0.241, S = 1.012}, and for males
+\verb{k = 0.9, a = -0.302, S = 1}.
 }
 \examples{
 \dontrun{

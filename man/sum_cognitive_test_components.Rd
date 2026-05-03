@@ -18,13 +18,13 @@ sum_cognitive_test_components(
 
 \item{component_cols}{Character vector of column names to combine}
 
-\item{result_col}{Name for new total score column (default: "total_score")}
+\item{result_col}{Name for new total score column (default: \code{"total_score"})}
 
-\item{method}{Combination method: "sum" or "mean" (default: "sum")}
+\item{method}{Combination method: \code{"sum"} or \code{"mean"} (default: \code{"sum"})}
 
-\item{na.rm}{Remove NA values when combining (default: TRUE)}
+\item{na.rm}{Remove \code{NA} values when combining (default: \code{TRUE})}
 
-\item{verbose}{Show informative messages (default: TRUE)}
+\item{verbose}{Show informative messages (default: \code{TRUE})}
 }
 \value{
 Data frame with added total score column
@@ -35,9 +35,9 @@ Combines multiple test component scores using sum or mean.
 \examples{
 \dontrun{
 result <- sum_cognitive_test_components(
-  dataf = my_data,
+  dataf          = my_data,
   component_cols = c("trails_a_time", "trails_b_time"),
-  result_col = "trails_total"
+  result_col     = "trails_total"
 )
 }
 }

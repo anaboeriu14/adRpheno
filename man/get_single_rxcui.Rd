@@ -4,21 +4,25 @@
 \alias{get_single_rxcui}
 \title{Get RxCUI for a single medication}
 \usage{
-get_single_rxcui(med_name, retry_count = 3, timeout = 10)
+get_single_rxcui(med_name, timeout = 10)
 }
 \arguments{
-\item{med_name}{Medication name (ideally an ingredient name)}
+\item{med_name}{Medication name (ideally an ingredient name).}
 
-\item{retry_count}{Retry attempts on failure (default: 3)}
-
-\item{timeout}{API timeout in seconds (default: 10)}
+\item{timeout}{API timeout in seconds (default: 10).}
 }
 \value{
-RxCUI as character, or NA_character_ if not found
+RxCUI as a character scalar, or \code{NA_character_} if the lookup
+fails or returns no match.
 }
 \description{
-Queries RxNorm API using "exact then normalized" matching, which handles
-abbreviations (e.g., "hctz" â†’ "hydrochlorothiazide") without false positives.
+Queries the RxNorm API using "exact then normalized" matching, which
+handles abbreviations (e.g. "hctz" -> "hydrochlorothiazide") without
+false positives.
+}
+\details{
+Note: this is a thin single-call wrapper with no caching. For batch
+lookups, use \code{\link[=add_rxcuis]{add_rxcuis()}}, which caches results to disk.
 }
 \examples{
 \dontrun{

@@ -13,20 +13,23 @@ validate_apoe_e4_status(dataf, genotype, e4_positive, return_all = FALSE)
 
 \item{e4_positive}{Character. Name of the e4 carrier status column}
 
-\item{return_all}{Logical. Return entire dataset with validation column (default: FALSE)}
+\item{return_all}{Logical. Return entire dataset with validation column
+(default: \code{FALSE})}
 }
 \value{
-Data frame with validation results, or invisible NULL if no mismatches
+When \code{return_all = FALSE}: a data frame of mismatch rows, or
+invisible \code{NULL} if none. When \code{return_all = TRUE}: the full data frame
+with the added validation column.
 }
 \description{
 Checks for mismatches between APOE genotypes and e4 carrier status flags.
 }
 \examples{
 \dontrun{
-# Check for mismatches only
+# Mismatches only
 mismatches <- validate_apoe_e4_status(df, "apoe_genotype", "is_e4_carrier")
 
-# Get all records with validation
+# Full dataset with validation column
 all_data <- validate_apoe_e4_status(df, "apoe_genotype", "is_e4_carrier",
                                     return_all = TRUE)
 }

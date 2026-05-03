@@ -17,12 +17,12 @@ compute_zscores(
 
 \item{vars}{Character vector of numeric variable names to standardize}
 
-\item{prefix}{Prefix for standardized variable names (default: "zscore_")}
+\item{prefix}{Prefix for standardized variable names (default: \code{"zscore_"})}
 
-\item{group_vars}{Character vector of grouping variables for group-wise
-standardization (optional)}
+\item{group_vars}{Optional character vector of grouping variables for
+group-wise standardization}
 
-\item{verbose}{Show informative messages (default: TRUE)}
+\item{verbose}{Show informative messages (default: \code{TRUE})}
 }
 \value{
 Data frame with added standardized variable columns
@@ -39,7 +39,7 @@ result <- compute_zscores(df, vars = c("age", "weight", "height"))
 # Group-wise standardization
 result <- compute_zscores(
   df,
-  vars = c("test_score1", "test_score2"),
+  vars       = c("test_score1", "test_score2"),
   group_vars = c("age_group", "sex")
 )
 }

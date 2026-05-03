@@ -8,7 +8,7 @@ add_atc_classification(
   dataf,
   rxcui_col = "rxcui",
   new_col_name = NULL,
-  unnest = FALSE,
+  as_list_column = FALSE,
   atc_level = "second",
   batch_size = 500,
   save_freq = 500,
@@ -19,41 +19,57 @@ add_atc_classification(
 )
 }
 \arguments{
-\item{dataf}{Data frame containing RxCUI values}
+\item{dataf}{Data frame containing RxCUI values.}
 
-\item{rxcui_col}{Column with RxCUI values (default: "rxcui")}
+\item{rxcui_col}{Column with RxCUI values (default: \code{"rxcui"}).}
 
-\item{new_col_name}{Name for new column (default: auto-generated, e.g., "atc2_class")}
+\item{new_col_name}{Name for the new column. If \code{NULL} (default), an
+auto-generated name based on \code{atc_level} is used (e.g. \code{"atc2_class"}).}
 
-\item{unnest}{Create separate rows for multiple classes (default: FALSE)}
+\item{as_list_column}{Logical. If \code{TRUE}, the output column is a
+list-column where each entry is a character vector of ATC classes for
+that drug. If \code{FALSE} (default), multiple classes are joined by \code{"; "}.}
 
-\item{atc_level}{ATC level: "first", "second" (default), "third", or "fourth"}
+\item{atc_level}{ATC level: \code{"first"}, \code{"second"} (default), \code{"third"},
+or \code{"fourth"}.}
 
-\item{batch_size}{Items per batch (default: 500)}
+\item{batch_size}{Items per batch (default: 500).}
 
-\item{save_freq}{Save cache every N items (default: 500)}
+\item{save_freq}{Save cache every N items (default: 500).}
 
-\item{cache_dir}{Cache directory (default: "cache")}
+\item{cache_dir}{Cache directory (default: \code{"cache"}).}
 
-\item{max_age_days}{Cache expiration in days (default: 30)}
+\item{max_age_days}{Cache expiration in days (default: 30).}
 
-\item{retry_count}{Retry attempts (default: 3)}
+\item{retry_count}{Retry attempts (default: 3).}
 
-\item{batch_delay}{Seconds between batches (default: 0.5)}
+\item{batch_delay}{Seconds between batches (default: 0.5).}
 }
 \value{
-Data frame with ATC classification column added
+The input data frame with the ATC classification column added.
 }
 \description{
-Retrieves WHO ATC classifications for medications using RxCUI codes.
+Retrieves WHO ATC classifications for medications using RxCUI codes via
+direct calls to the National Library of Medicine RxClass REST API.
+Results are cached to disk so reruns and overlapping queries are cheap.
+}
+\details{
+For drugs with multiple ATC classifications, the default behavior
+(\code{as_list_column = FALSE}) collapses them into a single semicolon-separated
+string. Setting \code{as_list_column = TRUE} instead stores the per-row
+classifications as a list-column, which preserves multi-value structure
+for downstream tidyverse work (e.g. \code{\link[tidyr:unnest_longer]{tidyr::unnest_longer()}}).
 }
 \examples{
 \dontrun{
-df <- data.frame(med = c("atorvastatin", "metformin"),
+df <- data.frame(med   = c("atorvastatin", "metformin"),
                  rxcui = c("83367", "6809"))
 
-# Simple usage
+# Default: collapsed string
 add_atc_classification(df)
+
+# List-column for tidyverse-style downstream work
+add_atc_classification(df, as_list_column = TRUE)
 
 # Different level
 add_atc_classification(df, atc_level = "third")

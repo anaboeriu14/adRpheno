@@ -21,10 +21,13 @@ match_snp_genotype(
 
 \item{genotype_col}{Character. Name of the genotype column}
 
-\item{return_all}{Logical. Return entire dataset or just mismatches (default: FALSE)}
+\item{return_all}{Logical. Return entire dataset with validation column
+(default: \code{FALSE})}
 }
 \value{
-Data frame with validation results, or invisible NULL if no mismatches
+When \code{return_all = FALSE}: a data frame of mismatch rows, or
+invisible \code{NULL} if none. When \code{return_all = TRUE}: the full data frame
+with the added validation column.
 }
 \description{
 Validates that SNP combinations (rs7412, rs429358) match reported genotypes.

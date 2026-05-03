@@ -14,44 +14,72 @@ categorize_drugs(
 )
 }
 \arguments{
-\item{dataf}{Data frame with medication data}
+\item{dataf}{Data frame with medication data.}
 
-\item{med_col}{Column with medication names}
+\item{med_col}{Column with medication names.}
 
-\item{atc_col}{Column with ATC codes/names (optional)}
+\item{atc_col}{Column with ATC codes/names. Optional; if supplied, a
+match in either \code{med_col} or \code{atc_col} flags the row.}
 
-\item{categories}{Named list of patterns for each category (see Details)}
+\item{categories}{Named list of pattern vectors. If \code{NULL} (default), uses
+built-in cardiometabolic categories (cholesterol, diabetes, hypertension).
+Supply your own list for any other therapeutic grouping.}
 
-\item{prefix}{Prefix for output columns (default: "is_")}
+\item{prefix}{Prefix for output column names (default: \code{"is_"}). Empty
+string allowed.}
 
-\item{suffix}{Suffix for output columns (default: "_med")}
+\item{suffix}{Suffix for output column names (default: \code{"_med"}). Empty
+string allowed.}
 }
 \value{
-Data frame with binary category columns added
+The input data frame with one binary (0/1) column per category.
 }
 \description{
 Adds binary indicator columns for medication categories based on pattern
 matching in medication names and/or ATC codes.
 }
 \details{
-Each category is a character vector of patterns to match (case-insensitive).
-Patterns are matched as whole words using word boundaries.
+Patterns are matched as whole words (\verb{\\b...\\b}) using \code{grepl()} with
+\code{ignore.case = TRUE}. Patterns are interpreted as \strong{regular expressions}:
+regex metacharacters (\code{.}, \code{+}, \code{*}, \code{(}, \verb{)}, \code{[}, \verb{]}, \verb{?}, \code{^}, \code{$},
+\code{|}, \verb{\\\\}) inside a pattern have their usual regex meaning. To match a
+literal metacharacter, escape it (e.g. \code{"hmg-coa\\\\."}). Plain word
+patterns like \code{"statin"} need no escaping.
 
-Default categories are:
+Because matches are anchored at word boundaries, a pattern like
+\code{"statin"} matches the standalone word \code{"statin"} (or the plural form
+\code{"statins"} if listed) but \strong{not} generic names that contain it as a
+suffix (e.g. \code{"atorvastatin"}). This is intentional: it prevents false
+positives when patterns are short common substrings. To match drugs by
+generic name, supply explicit patterns (e.g. \code{"atorvastatin"},
+\code{"rosuvastatin"}) or rely on the ATC class column instead.
+
+The built-in defaults assume \code{atc_col} (when supplied) contains
+second-level ATC class names, i.e. the output of \code{\link[=add_atc_classification]{add_atc_classification()}}
+with \code{atc_level = "second"}. They mix exact ATC2 class names with common
+generic-name patterns so they match against either column.
+
+Default categories:
 \itemize{
-\item \strong{cholesterol}: lipid modifying agents, statin(s)
-\item \strong{diabetes}: drugs used in diabetes
-\item \strong{hypertension}: renin-angiotensin, calcium channel blockers, diuretics, beta blockers
+\item \strong{cholesterol}: lipid modifying agents, statins
+\item \strong{diabetes}: drugs used in diabetes, blood glucose lowering agents,
+antidiabetics
+\item \strong{hypertension}: renin-angiotensin agents, calcium channel blockers,
+diuretics, beta blockers, antihypertensives
 }
+
+For other therapeutic groups, or for matching against a different ATC
+level, supply \code{categories} explicitly.
 }
 \examples{
 \dontrun{
-# Use defaults
-df <- categorize_drugs(df, med_col = "medication", atc_col = "atc2")
+# Use defaults (cardiometabolic, ATC2-aware)
+df <- categorize_drugs(df, med_col = "medication", atc_col = "atc2_class")
 
+# Custom categories
 my_cats <- list(
-  anticoagulant = c("warfarin", "apixaban", "rivaroxaban"),
-  antidepressant = c("ssri", "snri", "sertraline", "fluoxetine")
+  anticoagulant  = c("antithrombotic agents", "warfarin", "apixaban", "rivaroxaban"),
+  antidepressant = c("antidepressants", "ssri", "sertraline", "fluoxetine")
 )
 df <- categorize_drugs(df, med_col = "medication", categories = my_cats)
 }

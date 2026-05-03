@@ -16,18 +16,21 @@ create_adjusted_composites(
 \arguments{
 \item{dataf}{A data frame containing raw test scores and demographic information}
 
-\item{test_groups}{Named list of character vectors for each test group}
+\item{test_groups}{Named list of character vectors, one per composite group.
+Each element names the columns to include in that group's composite.}
 
 \item{grouping_vars}{Character vector of demographic grouping columns}
 
-\item{filters}{Named list of filtering conditions (optional)}
+\item{filters}{Optional named list of string filter expressions evaluated
+against \code{dataf} (e.g. \code{list(diagnosis = "diagnosis == 'CN'")})}
 
 \item{digits}{Integer for decimal places (default: 3)}
 
-\item{verbose}{Logical. Show informative messages (default: TRUE)}
+\item{verbose}{Logical. Show informative messages (default: \code{TRUE})}
 }
 \value{
-Data frame with z-scores and composite scores
+Data frame with added z-score columns (\verb{zscore_\{var\}_\{group\}}) and
+composite columns (\verb{\{group\}_comp_score}).
 }
 \description{
 Computes z-scores for test scores adjusted for demographic factors and
@@ -36,13 +39,13 @@ calculates composite scores for specified test groups.
 \examples{
 \dontrun{
 test_groups <- list(
-  memory = c("LM1", "LM2", "SEVLT_imm"),
+  memory    = c("LM1", "LM2", "SEVLT_imm"),
   executive = c("digit_span", "trails_a")
 )
 
 result <- create_adjusted_composites(
-  dataf = my_data,
-  test_groups = test_groups,
+  dataf         = my_data,
+  test_groups   = test_groups,
   grouping_vars = c("age_group", "edu_group")
 )
 }

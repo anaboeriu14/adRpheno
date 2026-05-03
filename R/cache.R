@@ -10,7 +10,7 @@
 #' @return A cache object: a list with `name`, `created`, and `entries`.
 #' @keywords internal
 #' @noRd
-initialize_cache <- function(cache_name, cache_dir = "cache") {
+.initialize_cache <- function(cache_name, cache_dir = "cache") {
   cache_path <- file.path(cache_dir, paste0(cache_name, ".rds"))
 
   if (file.exists(cache_path)) {
@@ -32,16 +32,16 @@ initialize_cache <- function(cache_name, cache_dir = "cache") {
 #' Add an entry to a cache
 #'
 #' Stores `value` under `key` in the cache, with the current timestamp.
-#' This does not persist to disk; call [save_cache()] to persist.
+#' This does not persist to disk; call `save_cache()` to persist.
 #'
-#' @param cache A cache object from [initialize_cache()].
+#' @param cache A cache object from `initialize_cache()`.
 #' @param key Cache key (coerced to character).
 #' @param value Value to store.
 #'
 #' @return The updated cache object.
 #' @keywords internal
 #' @noRd
-add_to_cache <- function(cache, key, value) {
+.add_to_cache <- function(cache, key, value) {
   cache$entries[[as.character(key)]] <- list(
     value     = value,
     timestamp = Sys.time()
@@ -64,7 +64,7 @@ add_to_cache <- function(cache, key, value) {
 #' @return The cached value, or `default`.
 #' @keywords internal
 #' @noRd
-get_from_cache <- function(cache, key, default = NULL, max_age_days = 30) {
+.get_from_cache <- function(cache, key, default = NULL, max_age_days = 30) {
   entry <- cache$entries[[as.character(key)]]
   if (is.null(entry)) return(default)
 

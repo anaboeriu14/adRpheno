@@ -17,34 +17,36 @@ add_rxcuis(
 )
 }
 \arguments{
-\item{dataf}{Data frame with medication names}
+\item{dataf}{Data frame with medication names.}
 
-\item{med_column}{Column containing medication names}
+\item{med_column}{Column containing medication names.}
 
-\item{rxcui_column}{Name for new RxCUI column (default: "rxcui")}
+\item{rxcui_column}{Name for the new RxCUI column (default: \code{"rxcui"}).
+Overwritten with a warning if it already exists.}
 
-\item{batch_size}{Medications per batch (default: 500)}
+\item{batch_size}{Medications per batch (default: 500).}
 
-\item{save_freq}{Save cache every N items (default: 500)}
+\item{save_freq}{Save cache every N items (default: 500).}
 
-\item{cache_dir}{Cache directory (default: "cache")}
+\item{cache_dir}{Cache directory (default: \code{"cache"}).}
 
-\item{max_age_days}{Cache expiration in days (default: 30)}
+\item{max_age_days}{Cache expiration in days (default: 30).}
 
-\item{retry_count}{Retry attempts (default: 3)}
+\item{retry_count}{Retry attempts (default: 3).}
 
-\item{batch_delay}{Seconds between batches (default: 0.5)}
+\item{batch_delay}{Seconds between batches (default: 0.5).}
 }
 \value{
-Data frame with RxCUI column added
+The input data frame with \code{rxcui_column} added.
 }
 \description{
-Looks up RxCUI codes for a column of medication names with caching.
-Medication names should be pre-cleaned (ingredient names, no dosages).
+Looks up RxCUI codes for a column of medication names. Results are cached
+to disk so reruns and overlapping queries are cheap. Medication names
+should be pre-cleaned (ingredient names, no dosages) for best match rates.
 }
 \examples{
 \dontrun{
-testMeds <- data.frame(med_clean = c("atorvastatin", "metformin", "lisinopril"))
-testMeds_with_rxcui <- add_rxcuis(testMeds, med_column = "med_clean")
+meds <- data.frame(med_clean = c("atorvastatin", "metformin", "lisinopril"))
+add_rxcuis(meds, med_column = "med_clean")
 }
 }
