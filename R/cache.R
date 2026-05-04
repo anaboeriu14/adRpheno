@@ -88,7 +88,7 @@
 #' @return Invisibly, the file path written.
 #' @keywords internal
 #' @noRd
-save_cache <- function(cache, cache_name, cache_dir = "cache") {
+.save_cache <- function(cache, cache_name, cache_dir = "cache") {
   if (!dir.exists(cache_dir)) {
     dir.create(cache_dir, recursive = TRUE)
   }
@@ -116,7 +116,7 @@ save_cache <- function(cache, cache_name, cache_dir = "cache") {
 #' @return The cache object with expired entries removed.
 #' @keywords internal
 #' @noRd
-clean_cache <- function(cache, max_age_days = 30) {
+.clean_cache <- function(cache, max_age_days = 30) {
   now <- Sys.time()
   cache$entries <- Filter(function(entry) {
     age_days <- as.numeric(difftime(now, entry$timestamp, units = "days"))
@@ -152,7 +152,7 @@ is_cache_expired <- function(cache, max_age_days = 30) {
 #' @return A list with `entry_count`, `created`, and `age_days`.
 #' @keywords internal
 #' @noRd
-get_cache_status <- function(cache) {
+.get_cache_status <- function(cache) {
   list(
     entry_count = length(cache$entries),
     created     = cache$created,

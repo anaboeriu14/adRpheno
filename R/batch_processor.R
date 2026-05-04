@@ -1,7 +1,7 @@
 #' Process items in batches with caching, retry, and progress reporting
 #'
 #' Internal orchestration helper that wraps an `api_function` (one call per
-#' item) with on-disk caching (`initialize_cache()`), batched
+#' item) with on-disk caching (`.initialize_cache()`), batched
 #' processing, retry-on-failure with exponential backoff, and a `cli`
 #' progress bar.
 #'
@@ -32,9 +32,9 @@
                            max_age_days = 30, retry_count = 3, batch_delay = 2,
                            process_type = "items", ...) {
 
-  cache <- initialize_cache(cache_name, cache_dir)
+  cache <- .initialize_cache(cache_name, cache_dir)
   if (is_cache_expired(cache, max_age_days)) {
-    cache <- clean_cache(cache, max_age_days)
+    cache <- .clean_cache(cache, max_age_days)
   }
 
   total_items <- length(items)
@@ -74,12 +74,12 @@
                                         retry_count, pb_id, ...)
 
     for (item in names(batch_results)) {
-      cache <- add_to_cache(cache, item, batch_results[[item]])
+      cache <- .add_to_cache(cache, item, batch_results[[item]])
       cache_results[[item]] <- batch_results[[item]]
     }
 
     if (i %% save_every_n_batches == 0L || i == length(batches)) {
-      save_cache(cache, cache_name, cache_dir)
+      .save_cache(cache, cache_name, cache_dir)
     }
 
     if (i < length(batches) && batch_delay > 0) {
@@ -112,7 +112,7 @@
 
   for (i in seq_along(items)) {
     item <- items[i]
-    cached_value <- get_from_cache(cache, item, default = NULL,
+    cached_value <- .get_from_cache(cache, item, default = NULL,
                                    max_age_days = max_age_days)
 
     if (is.null(cached_value)) {
