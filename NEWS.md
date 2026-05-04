@@ -1,3 +1,43 @@
+# adRpheno 2.0.0
+
+Major cleanup release. The package was refactored end-to-end for stability, professional polish, and reduced external risk. The function reference reflects the new state; the changes are summarized below. See git history for per-function detail.
+
+## New
+
+-   Vendored RxClass API access (`add_atc_classification()` now calls the National Library of Medicine RxClass REST API directly instead of via the unmaintained `rxnorm` GitHub package).
+-   `add_atc_classification(as_list_column = TRUE)` returns a list-column instead of exploding rows; downstream callers can use `tidyr::unnest_longer()` if they want the previous shape.
+-   `is_cache_expired()` for cache-level age checks.
+-   Added a `tests/testthat/` suite covering APOE helpers and validation, clinical calculations, cognitive composites, drug categorization, and z-score standardization.
+
+## Breaking changes
+
+-   `rxnorm` GitHub package dependency dropped.
+-   `add_atc_classification()`: `unnest = TRUE` replaced by `as_list_column = TRUE`.
+-   `pivot_medication_data_wide()`: `position_col` is now required (no default).
+-   `get_single_rxcui()`: lost its `retry_count` parameter. Retry now happens at the batch-orchestration layer only.
+-   `reverse_cognitive_scores()` removed (was unused; multiply by `-1` directly if needed).
+-   `outliers.R` (`detect_outlier_thresholds()`, `replace_outliers_with_na()`) moved to `adRutils` (it's domain-agnostic). Use `adRutils::detect_outlier_thresholds()` instead.
+-   All public functions migrated to `adRutils::validate_args` with the new assertion helpers (`is_string`, `is_flag`, `is_one_of`, etc.).
+
+## Fixes
+
+-   `add_atc_classification()`: column-already-exists warning now fires for the auto-generated default name
+    -   previously the check ran before name resolution, so the warning was silent).
+-   Helper names and labels (`.apply_atc2_*`, `"ATC2:"`) no longer hardcode level 2; they reflect whichever `atc_level` was used.
+-   `categorize_drugs()`: `prefix = ""` and `suffix = ""` are now accepted (previously rejected by validation).
+-   `cache.R`: `save_cache()` writes atomically (temp-file + rename) and `initialize_cache()` validates the loaded object's shape and recovers with warnings from corruption.
+-   Batch processor: removed double-retry between `get_single_rxcui()` and `.process_batch()`
+    -   previously a single failure could trigger up to 9 attempts). Retry now uses exponential backoff (0.5s → 1s → 2s).
+-   Vectorized `.format_apoe_genotype()` and `.predict_genotype_from_snps()` for performance and clarity.
+    -   Fixed broken character class in genotype-cleaning regex.
+
+## Other
+
+-   Cache utilities moved from `adRutils` to `adRpheno` (closer to their actual users).
+-   `imports.R` cleaned up: dropped duplicate `@import cli`, dropped unused imports, switched broad `@import dplyr` to explicit `@importFrom dplyr` directives. Replaced `NULL` with `"_PACKAGE"` sentinel for the package help page.
+-   File renamed: `pivot_medication_data_wide.R` → `drug_pivot_wide.R` (matches the `drug_*.R` convention).
+
+------------------------------------------------------------------------
 # adRpheno 1.1.1
 
 ## Bug Fixes
@@ -6,12 +46,14 @@
 -   Added .parse_sex() helper to normalize sex encodings (0/1, m/f, male/female) with clear error messages for unrecognized values
 
 ## Changes
-- None
+
+-   None
 
 ## Breaking Changes
 
-- None
-------------------------------------------------------------------------
+-   
+
+    ## None
 
 # adRpheno 1.1.0
 

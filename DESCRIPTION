@@ -1,8 +1,10 @@
 Package: adRpheno
 Title: Tools for Alzheimer's Disease Endophenotype Analysis
 Version: 2.0.0
-Authors@R: 
-    person("Ana", "Boeriu",  "ana.boeriu@ucsf.edu", role = c("aut", "cre"))
+Authors@R:
+    person("Ana", "Boeriu",
+           email = "ana.boeriu@ucsf.edu",
+           role = c("aut", "cre"))
 Description: Tools for standardizing and analyzing Alzheimer's Disease (AD)
     endophenotypes. Functions cover biomarker outlier detection and
     standardization, clinical measurement calculations (eGFR, BMI,
@@ -23,7 +25,6 @@ Imports:
     httr,
     jsonlite,
     rlang,
-    stats,
     stringr,
     tidyr,
     utils
