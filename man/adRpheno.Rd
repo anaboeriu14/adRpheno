@@ -11,6 +11,14 @@ research data: APOE genotype validation, RxNorm-based medication
 processing with caching, cognitive composite scoring, clinical metrics
 (eGFR, BMI, blood pressure), and biomarker standardization.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/anaboeriu14/adRpheno}
+  \item Report bugs at \url{https://github.com/anaboeriu14/adRpheno/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Ana Boeriu \email{ana.boeriu@ucsf.edu}
 
