@@ -1,20 +1,33 @@
 Package: adRpheno
 Title: Tools for Alzheimer's Disease Endophenotype Analysis
-Version: 1.1.1
+Version: 2.0.0
 Authors@R: 
-    person("Ana", "Boeriu", , "ana.boeriu@ucsf.edu", role = c("aut", "cre"))
-Description: Tools for standardizing and analyzing Alzheimer's Disease (AD) 
-    endophenotypes. Functions include biomarker standardization 
-    and outlier detection, clinical measurement calculations (eGFR, BMI, arterial BP), 
-    cognitive composite score computation, neuropsychological test processing, 
-    and APOE genotype verification and medication data processing using RxNorm API. 
-License: GPL (>= 3)
+    person("Ana", "Boeriu",  "ana.boeriu@ucsf.edu", role = c("aut", "cre"))
+Description: Tools for standardizing and analyzing Alzheimer's Disease (AD)
+    endophenotypes. Functions cover biomarker outlier detection and
+    standardization, clinical measurement calculations (eGFR, BMI,
+    blood pressure), cognitive composite score computation,
+    APOE genotype validation and risk classification, and medication
+    processing through the National Library of Medicine RxNorm and
+    RxClass APIs with on-disk caching.
+License: MIT + file LICENSE
+URL: https://github.com/anaboeriu14/adRpheno
+BugReports: https://github.com/anaboeriu14/adRpheno/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: 
-    adRutils (>= 1.0.0),
-    stats, dplyr,
-    stringr, tidyr, utils,rlang,
-    jsonlite, httr,
-    purrr, cli, rxnorm
+    adRutils (>= 2.0.0),
+    cli,
+    dplyr,
+    httr,
+    jsonlite,
+    rlang,
+    stats,
+    stringr,
+    tidyr,
+    utils
+Suggests: 
+    testthat (>= 3.0.0),
+    covr
+Config/testthat/edition: 3
