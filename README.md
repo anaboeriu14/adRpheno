@@ -2,6 +2,7 @@
 
 [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/anaboeriu14/adRpheno/releases)
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html) 
+[![R-CMD-check](https://github.com/anaboeriu14/adRpheno/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/anaboeriu14/adRpheno/actions/workflows/R-CMD-check.yaml)
 
 Tools for processing and analyzing Alzheimer's Disease (AD) endophenotypes: APOE genotype validation, RxNorm-based medication processing with on-disk caching, cognitive composite scoring, clinical metrics (eGFR, BMI, blood pressure), and biomarker standardization.
 
