@@ -1,0 +1,84 @@
+# Calculate blood pressure metrics
+
+Calculates average systolic and diastolic blood pressure from two
+measurements, and optionally calculates mean arterial pressure (MAP)
+and/or pulse pressure.
+
+## Usage
+
+``` r
+calculate_bp_metrics(
+  dataf,
+  systolic1,
+  systolic2,
+  diastolic1,
+  diastolic2,
+  calculate_pp = TRUE,
+  calculate_map = FALSE,
+  decimal_places = 2,
+  verbose = TRUE
+)
+```
+
+## Arguments
+
+- dataf:
+
+  A data frame containing blood pressure measurements
+
+- systolic1:
+
+  String. Name of the first systolic BP measurement column
+
+- systolic2:
+
+  String. Name of the second systolic BP measurement column
+
+- diastolic1:
+
+  String. Name of the first diastolic BP measurement column
+
+- diastolic2:
+
+  String. Name of the second diastolic BP measurement column
+
+- calculate_pp:
+
+  Logical. If `TRUE`, calculates pulse pressure (default: `TRUE`)
+
+- calculate_map:
+
+  Logical. If `TRUE`, calculates mean arterial pressure (default:
+  `FALSE`)
+
+- decimal_places:
+
+  Integer. Decimal places for rounding (default: 2)
+
+- verbose:
+
+  Logical. If `TRUE`, prints informative messages (default: `TRUE`)
+
+## Value
+
+Data frame with added average BP columns and selected derived metrics
+
+## Details
+
+Mean arterial pressure (MAP) is calculated as:
+`MAP = DBP + (SBP - DBP) / 3`. Pulse pressure (PP) is calculated as:
+`PP = SBP - DBP`.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+df <- data.frame(
+  systolic1  = c(120, 130, 125),
+  diastolic1 = c(80,  85,  82),
+  systolic2  = c(130, 140, 135),
+  diastolic2 = c(85,  90,  88)
+)
+calculate_bp_metrics(df, "systolic1", "systolic2", "diastolic1", "diastolic2")
+} # }
+```

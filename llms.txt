@@ -1,0 +1,211 @@
+# adRpheno
+
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/anaboeriu14/adRpheno/releases)
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html)
+[![R-CMD-check](https://github.com/anaboeriu14/adRpheno/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/anaboeriu14/adRpheno/actions/workflows/R-CMD-check.yaml)
+
+Tools for processing and analyzing Alzheimer’s Disease (AD)
+endophenotypes: APOE genotype validation, RxNorm-based medication
+processing with on-disk caching, cognitive composite scoring, clinical
+metrics (eGFR, BMI, blood pressure), and biomarker standardization.
+
+> **Version 2.0.0 is a major cleanup release.** The package was
+> refactored end-to-end: vendored RxClass API access (no more `rxnorm`
+> dependency), `validate_args` migration, atomic cache writes, and a
+> `testthat` suite. License switched from GPL-3 to MIT. See
+> [NEWS.md](https://github.com/anaboeriu14/adRpheno/blob/main/NEWS.md)
+> for the full list.
+
+## Installation
+
+`adRpheno` depends on `adRutils`, also installed from GitHub. The
+`Remotes:` field in `DESCRIPTION` resolves this automatically.
+
+### Option 1: Using remotes (recommended)
+
+``` r
+
+# Install remotes if needed
+if (!requireNamespace("remotes", quietly = TRUE)) {
+  install.packages("remotes")
+}
+
+# Install adRpheno (and adRutils)
+remotes::install_github("anaboeriu14/adRpheno")
+```
+
+### Option 2: Using devtools
+
+``` r
+
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  install.packages("devtools")
+}
+devtools::install_github("anaboeriu14/adRpheno")
+```
+
+## Quick Start
+
+``` r
+
+library(adRpheno)
+
+# Add RxCUI codes to medications, then ATC therapeutic classifications
+meds <- medications_df %>%
+  add_rxcuis(med_column = "medication_name") %>%
+  add_atc_classification(atc_level = "second")
+
+# Categorize by therapeutic class (cardiometabolic defaults)
+meds <- categorize_drugs(meds, med_col = "medication_name", atc_col = "atc2_class")
+
+# Validate APOE genotypes against e4 carrier status
+mismatches <- validate_apoe_e4_status(
+  genetic_data,
+  genotype    = "apoe_genotype",
+  e4_positive = "is_e4_carrier"
+)
+
+# CKD-EPI 2021 eGFR
+clinical_data <- calculate_egfr(
+  patient_data,
+  creatinine_col = "serum_creatinine",
+  age_col        = "age",
+  sex_col        = "sex"
+)
+
+# Demographic-adjusted cognitive composites
+cognitive_scores <- create_adjusted_composites(
+  test_data,
+  test_groups = list(
+    memory    = c("LM1", "LM2", "SEVLT_imm"),
+    executive = c("digit_span", "trails_a")
+  ),
+  grouping_vars = c("age_group", "edu_group")
+)
+```
+
+## Documentation
+
+For full documentation, including function details and examples:
+
+``` r
+
+# Browse all functions
+help(package = "adRpheno")
+
+# Function-specific help
+?add_atc_classification
+?validate_apoe_e4_status
+?calculate_egfr
+```
+
+## Version Information
+
+**Current version:** 2.0.0
+
+See [Releases](https://github.com/anaboeriu14/adRpheno/releases) and
+[NEWS.md](https://github.com/anaboeriu14/adRpheno/blob/main/NEWS.md) for
+the full changelog.
+
+## License
+
+This project is licensed under the MIT License. Versions ≤ 1.1.1 were
+released under GPL-3.
+
+## Citation
+
+If you use this package in your research, please cite:
+
+    Boeriu, A. (2026). adRpheno: Tools for Alzheimer's Disease Endophenotype Analysis.
+    R package version 2.0.0. https://github.com/anaboeriu14/adRpheno
+
+## Contact
+
+For questions or issues, please open an issue on
+[GitHub](https://github.com/anaboeriu14/adRpheno/issues).
+
+## Acknowledgments
+
+- RxNorm and RxClass APIs provided by the U.S. National Library of
+  Medicine
+- WHO ATC/DDD classification system
+
+# Package index
+
+## Medication processing
+
+Look up RxCUI codes, attach WHO ATC classifications, categorize drugs by
+therapeutic class, and reshape long medication data to wide format. All
+API calls are cached to disk.
+
+- [`get_single_rxcui()`](https://anaboeriu14.github.io/adRpheno/reference/get_single_rxcui.md)
+  : Get RxCUI for a single medication
+- [`add_rxcuis()`](https://anaboeriu14.github.io/adRpheno/reference/add_rxcuis.md)
+  : Add RxCUI codes to medication dataframe
+- [`add_atc_classification()`](https://anaboeriu14.github.io/adRpheno/reference/add_atc_classification.md)
+  : Add ATC classifications to medications
+- [`categorize_drugs()`](https://anaboeriu14.github.io/adRpheno/reference/categorize_drugs.md)
+  : Categorize medications by therapeutic class
+- [`pivot_medication_data_wide()`](https://anaboeriu14.github.io/adRpheno/reference/pivot_medication_data_wide.md)
+  : Pivot medication data from long to wide format
+
+## APOE genetics
+
+Validate APOE genotypes against e4 carrier flags and rs7412/rs429358 SNP
+data, and classify genotypes into risk groups.
+
+- [`validate_apoe_e4_status()`](https://anaboeriu14.github.io/adRpheno/reference/validate_apoe_e4_status.md)
+  : Validate APOE e4 carrier status
+- [`match_snp_genotype()`](https://anaboeriu14.github.io/adRpheno/reference/match_snp_genotype.md)
+  : Match APOE SNPs to genotypes
+- [`classify_apoe_risk_groups()`](https://anaboeriu14.github.io/adRpheno/reference/classify_apoe_risk_groups.md)
+  : Classify APOE genotypes into risk groups
+
+## Clinical calculations
+
+BMI with obesity classification, blood pressure metrics (mean arterial
+pressure, pulse pressure), and CKD-EPI 2021 eGFR.
+
+- [`calculate_bmi_obesity()`](https://anaboeriu14.github.io/adRpheno/reference/calculate_bmi_obesity.md)
+  : Calculate BMI and classify obesity status
+- [`calculate_bp_metrics()`](https://anaboeriu14.github.io/adRpheno/reference/calculate_bp_metrics.md)
+  : Calculate blood pressure metrics
+- [`calculate_egfr()`](https://anaboeriu14.github.io/adRpheno/reference/calculate_egfr.md)
+  : Calculate estimated Glomerular Filtration Rate (eGFR)
+
+## Cognitive composites & standardization
+
+Compute z-scores (optionally group-wise) and build demographic-adjusted
+cognitive composite scores from groups of test variables.
+
+- [`compute_zscores()`](https://anaboeriu14.github.io/adRpheno/reference/compute_zscores.md)
+  : Standardize Numeric Variables
+- [`create_adjusted_composites()`](https://anaboeriu14.github.io/adRpheno/reference/create_adjusted_composites.md)
+  : Compute Adjusted Composite Scores
+- [`sum_cognitive_test_components()`](https://anaboeriu14.github.io/adRpheno/reference/sum_cognitive_test_components.md)
+  : Calculate Total Score from Multiple Test Components
+
+# Articles
+
+### Medication processing
+
+End-to-end workflows for looking up RxCUI codes, attaching WHO ATC
+classifications, categorizing drugs by therapeutic class, and reshaping
+long medication data to wide format. These articles use the live RxNav
+API, so they are website-only (excluded from R CMD check).
+
+- [RxNorm & ATC
+  lookup](https://anaboeriu14.github.io/adRpheno/articles/medications-rxnorm-atc.md):
+- [Categorize & pivot to wide
+  format](https://anaboeriu14.github.io/adRpheno/articles/medications-categorize-pivot.md):
+
+### Genetics & cognition
+
+Validate APOE genotypes against e4 carrier flags and SNP data, classify
+risk groups, and build demographic-adjusted cognitive composites.
+
+- [APOE genotype
+  workflow](https://anaboeriu14.github.io/adRpheno/articles/apoe-genetics.md):
+- [Cognitive
+  composites](https://anaboeriu14.github.io/adRpheno/articles/cognitive-composites.md):

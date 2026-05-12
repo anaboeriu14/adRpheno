@@ -1,0 +1,221 @@
+# RxNorm & ATC lookup
+
+``` r
+
+library(adRpheno)
+```
+
+Medication data in clinical research usually starts as messy free text —
+`"atorvastatin 40 mg"`, `"METFORMIN HCL"`, `"hctz 25mg po qd"`. Turning
+that into something analyzable means two API round trips:
+
+1.  **Free text → RxCUI**. The National Library of Medicine’s
+    [RxNorm](https://www.nlm.nih.gov/research/umls/rxnorm/) assigns each
+    clinical drug a unique numeric ID (RxCUI).
+    [`add_rxcuis()`](https://anaboeriu14.github.io/adRpheno/reference/add_rxcuis.md)
+    resolves names to RxCUIs.
+2.  **RxCUI → ATC class**. The WHO ATC classification organizes drugs
+    into a four-level therapeutic hierarchy.
+    [`add_atc_classification()`](https://anaboeriu14.github.io/adRpheno/reference/add_atc_classification.md)
+    retrieves the class at the level you ask for.
+
+Both functions hit the live [RxNav REST
+API](https://rxnav.nlm.nih.gov/), so this article is website-only
+(excluded from `R CMD check`).
+
+## Step 0 — Clean before you lookup
+
+Match rates depend heavily on input quality. The API works best on
+**ingredient names** without dosages, formulations, or brand-name
+decoration.
+
+A minimal cleaning pass:
+
+``` r
+
+meds_raw <- data.frame(
+  med = c("Atorvastatin 40 MG Oral Tablet",
+          "METFORMIN HCL 500MG",
+          "lisinopril",
+          "hctz",
+          "Aspirin EC 81mg")
+)
+
+# Lowercase, strip dosage/units, drop common formulation words
+meds_raw$med_clean <- meds_raw$med |>
+  tolower() |>
+  gsub("\\d+\\s*(mg|mcg|g|ml|iu)\\b", "", x = _) |>
+  gsub("\\b(hcl|tablet|oral|po|ec|cr|er|xr)\\b", "", x = _) |>
+  trimws()
+
+meds_raw
+#>                              med            med_clean
+#> 1 Atorvastatin 40 MG Oral Tablet         atorvastatin
+#> 2            METFORMIN HCL 500MG             metformin
+#> 3                     lisinopril           lisinopril
+#> 4                           hctz                 hctz
+#> 5                Aspirin EC 81mg              aspirin
+```
+
+You don’t need anything fancier than that to get started. Iterate based
+on what fails to match.
+
+## Step 1 — Look up RxCUIs
+
+``` r
+
+meds <- add_rxcuis(meds_raw, med_column = "med_clean")
+```
+
+What this does under the hood:
+
+- **De-duplicates** before calling the API. Only unique non-empty values
+  are queried, so a column with 10,000 rows but 200 unique drug names
+  hits the API 200 times.
+- **Searches** with RxNorm’s `search=2` mode (exact match, then
+  normalized match). This is what lets `"hctz"` resolve to
+  hydrochlorothiazide without false positives.
+- **Caches** every result to `cache/rxcui_cache.rds`. Reruns are
+  essentially free.
+- **Batches** with retry on failure (3 attempts, exponential backoff:
+  0.5s, 1s, 2s).
+- **Reports** match rate when done: `RxCUI: 5/5 (100%) in 0.1 min`.
+
+Result:
+
+``` r
+
+meds
+#>                              med            med_clean    rxcui
+#> 1 Atorvastatin 40 MG Oral Tablet         atorvastatin    83367
+#> 2            METFORMIN HCL 500MG             metformin     6809
+#> 3                     lisinopril           lisinopril    29046
+#> 4                           hctz                 hctz     5487
+#> 5                Aspirin EC 81mg              aspirin     1191
+```
+
+### When a match fails
+
+Unmatched rows get `NA`. The most common causes:
+
+- **Brand names** the cleaner didn’t strip. `"glucophage"` won’t match;
+  `"metformin"` will. Either map brand to generic up front, or use
+  [`get_single_rxcui()`](https://anaboeriu14.github.io/adRpheno/reference/get_single_rxcui.md)
+  interactively to test problem cases.
+- **Compound formulations**. `"lisinopril/hctz"` is two drugs; RxNorm
+  wants them split into separate rows first.
+- **Multi-word names with extra qualifiers**. `"vitamin d3"` may match
+  where `"vitamin d 3 (cholecalciferol)"` doesn’t.
+
+For a single tricky name, debug interactively without touching the batch
+cache:
+
+``` r
+
+get_single_rxcui("glucophage")
+#> [1] "6809"  (yes, the API does brand-name lookup directly)
+
+get_single_rxcui("lisinopril/hctz")
+#> [1] NA      (compound; split it)
+```
+
+## Step 2 — Attach ATC classifications
+
+Once every row has an RxCUI, ask for ATC classes:
+
+``` r
+
+meds <- add_atc_classification(meds, rxcui_col = "rxcui", atc_level = "second")
+meds
+#>                              med            med_clean    rxcui                    atc2_class
+#> 1 Atorvastatin 40 MG Oral Tablet         atorvastatin    83367         lipid modifying agents
+#> 2            METFORMIN HCL 500MG             metformin     6809         drugs used in diabetes
+#> 3                     lisinopril           lisinopril    29046  agents acting on the renin-...
+#> 4                           hctz                 hctz     5487                      diuretics
+#> 5                Aspirin EC 81mg              aspirin     1191         antithrombotic agents
+```
+
+### Choosing an ATC level
+
+ATC is a four-level hierarchy:
+
+| Level    | Width   | Example | Meaning                  |
+|----------|---------|---------|--------------------------|
+| `first`  | 1 char  | `C`     | Anatomical main group    |
+| `second` | 3 chars | `C10`   | Therapeutic subgroup     |
+| `third`  | 4 chars | `C10A`  | Pharmacological subgroup |
+| `fourth` | 5 chars | `C10AA` | Chemical subgroup        |
+
+`"second"` is the most common choice for analysis grouping — granular
+enough to distinguish “lipid modifying” from “antithrombotic,” coarse
+enough that you get a manageable number of categories. Use `"third"` or
+`"fourth"` if you need finer distinctions like statins vs. PCSK9
+inhibitors.
+
+Each level uses a separate cache file (`atc1_cache.rds`,
+`atc2_cache.rds`, …) so switching levels doesn’t invalidate previous
+work.
+
+### Drugs with multiple classifications
+
+Some drugs sit in more than one ATC class — aspirin is both
+`antithrombotic agents` and `analgesics`, for example. By default the
+result is collapsed:
+
+``` r
+
+meds$atc2_class[5]
+#> [1] "antithrombotic agents; analgesics"
+```
+
+For tidyverse-style downstream work where you’d rather have one row per
+(drug, class), use a list-column:
+
+``` r
+
+meds_list <- add_atc_classification(
+  meds_raw_with_rxcui,
+  rxcui_col      = "rxcui",
+  as_list_column = TRUE
+)
+# Then unnest if you want one row per (drug, class):
+tidyr::unnest_longer(meds_list, atc2_class)
+```
+
+## Tuning for larger datasets
+
+The defaults are tuned for a few thousand unique drugs. For larger jobs
+the parameters worth knowing:
+
+| Parameter      | Default | What it controls                                 |
+|----------------|---------|--------------------------------------------------|
+| `batch_size`   | 500     | API calls per batch before the inter-batch sleep |
+| `batch_delay`  | 0.5     | Seconds between batches (rate-limit hygiene)     |
+| `save_freq`    | 500     | How often the cache is written to disk           |
+| `retry_count`  | 3       | Retry attempts on failed calls                   |
+| `max_age_days` | 30      | Cache entry expiration                           |
+
+A typical “big job” tuning — say 50,000 unique drug strings — bumps
+batch sizes up and saves more often so an interruption doesn’t lose much
+progress:
+
+``` r
+
+add_rxcuis(meds_raw,
+           med_column   = "med_clean",
+           batch_size   = 1000,
+           save_freq    = 200,
+           batch_delay  = 1)
+```
+
+If you’re being rate-limited (failures clustered in time, not random),
+increase `batch_delay` rather than decreasing `batch_size` — that’s the
+lever RxNav cares about.
+
+## What comes next
+
+Once medications have RxCUIs and ATC classes, you usually want to either
+categorize them by therapeutic class (statins, antidiabetics, …) or
+pivot from one-row-per-medication to one-row-per-participant. That’s
+[the next
+article](https://anaboeriu14.github.io/adRpheno/articles/medications-categorize-pivot.md).
