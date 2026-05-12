@@ -3,6 +3,7 @@
 [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/anaboeriu14/adRpheno/releases) 
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 [![R-CMD-check](https://github.com/anaboeriu14/adRpheno/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/anaboeriu14/adRpheno/actions/workflows/R-CMD-check.yaml) 
+[![Website](https://img.shields.io/badge/docs-website-1F6F73.svg)](https://anaboeriu14.github.io/adRpheno/)
 
 Tools for processing and analyzing Alzheimer's Disease (AD) endophenotypes: APOE genotype validation, RxNorm-based medication processing with on-disk caching, cognitive composite scoring, clinical metrics (eGFR, BMI, blood pressure), and biomarker standardization.
 
@@ -74,7 +75,9 @@ cognitive_scores <- create_adjusted_composites(
 
 ## Documentation
 
-For full documentation, including function details and examples:
+For full documentation, including function reference, articles, and changelog, visit the [**package website**](https://anaboeriu14.github.io/adRpheno/).
+
+You can also browse documentation from R:
 
 ``` r
 # Browse all functions
