@@ -55,3 +55,6 @@ rsconnect/
 *.Rproj
 .Rbuildignore
 .Rproj.user
+.positai
+docs
+inst/doc

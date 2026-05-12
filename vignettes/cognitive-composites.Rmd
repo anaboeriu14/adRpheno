@@ -1,0 +1,129 @@
+---
+title: "Cognitive composites"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Cognitive composites}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, eval = FALSE}
+library(adRpheno)
+```
+
+Cognitive testing in AD research typically produces a battery of related scores: memory tests, executive function tests, processing speed tests, and so on. Two common analytic needs:
+
+1. **Standardize each test** so scores from different scales are comparable, and optionally do this *within demographic strata* (age groups, education groups) so the resulting z-scores reflect deviation from peers rather than from the full sample.
+2. **Build composite scores** that summarize each domain into a single per-participant number — usually a mean of z-scored test scores in that domain.
+
+`adRpheno` provides three functions for this:
+
+- `compute_zscores()` — standardize one or more variables, with or without grouping.
+- `create_adjusted_composites()` — z-score and combine into per-domain composites in one step, with demographic adjustment built in.
+- `sum_cognitive_test_components()` — sum or mean across raw test components (no standardization).
+
+## Z-scores, simple and grouped
+
+The simple case standardizes each variable against the full sample:
+
+```{r, eval = FALSE}
+tests <- data.frame(
+  id           = 1:6,
+  age_group    = c("young", "young", "young", "old", "old", "old"),
+  digit_span   = c(8, 7, 9, 6, 5, 7),
+  trails_a     = c(25, 30, 22, 40, 45, 38)
+)
+
+compute_zscores(tests, vars = c("digit_span", "trails_a"))
+#> # tibble with new columns: zscore_digit_span, zscore_trails_a
+```
+
+The grouped case computes z-scores *within* each level of `group_vars`. A score gets standardized against its peer group rather than the full sample:
+
+```{r, eval = FALSE}
+compute_zscores(
+  tests,
+  vars       = c("digit_span", "trails_a"),
+  group_vars = "age_group"
+)
+```
+
+For each age group, the new z-score columns have mean 0 and SD 1 *within that group*. This is what you want when raw scores depend strongly on age — older participants getting lower scores on a processing-speed test isn't pathological, it's expected, and group-wise z-scoring removes that age effect.
+
+## Demographic-adjusted composites
+
+`create_adjusted_composites()` packages the grouped z-scoring plus composite construction into a single call. You give it named groups of test variables and a set of demographic stratifiers:
+
+```{r, eval = FALSE}
+tests <- data.frame(
+  id         = 1:8,
+  age_group  = c("young", "young", "young", "young", "old", "old", "old", "old"),
+  edu_group  = c("hs",    "col",   "hs",    "col",   "hs",  "col", "hs",  "col"),
+  LM1        = c(12, 15, 10, 14, 11, 13, 9, 12),
+  LM2        = c(10, 13, 9,  12, 8,  11, 7, 10),
+  SEVLT_imm  = c(45, 52, 40, 48, 38, 44, 35, 42),
+  digit_span = c(8, 9, 7, 9, 6, 8, 5, 7),
+  trails_a   = c(25, 22, 30, 24, 38, 32, 45, 35)
+)
+
+result <- create_adjusted_composites(
+  tests,
+  test_groups = list(
+    memory    = c("LM1", "LM2", "SEVLT_imm"),
+    executive = c("digit_span", "trails_a")
+  ),
+  grouping_vars = c("age_group", "edu_group")
+)
+```
+
+What you get back:
+
+- Per-test z-score columns named `zscore_{test}_{group}` — e.g. `zscore_LM1_memory`, `zscore_digit_span_executive`. These are z-scored *within* each `age_group × edu_group` cell.
+- One composite column per group: `memory_comp_score` and `executive_comp_score`, each a row-mean of that group's z-scores.
+
+So `memory_comp_score` for participant 1 is the mean of three numbers — z-scored LM1, LM2, and SEVLT_imm, each relative to other young/college participants.
+
+### Why z-score columns include the group name
+
+You might notice the z-score column naming differs from `compute_zscores()`. The latter produces `zscore_LM1`; this function produces `zscore_LM1_memory`. The reason:
+
+> Nothing prevents the same test from appearing in two composite groups. If `LM1` were in both `memory` and a hypothetical `verbal` group, plain `zscore_LM1` would collide. The per-group suffix disambiguates.
+
+In practice tests don't usually appear in multiple groups, but the function is built to allow it, and the naming reflects that.
+
+## Filtering before z-scoring
+
+A common pattern: z-score against cognitively normal participants only, then apply those norms to everyone. `create_adjusted_composites()` supports this via the `filters` argument, which evaluates string expressions against the data:
+
+```{r, eval = FALSE}
+result <- create_adjusted_composites(
+  tests,
+  test_groups   = list(memory = c("LM1", "LM2", "SEVLT_imm")),
+  grouping_vars = c("age_group", "edu_group"),
+  filters       = list(dx = "diagnosis == 'CN'")
+)
+```
+
+The filter expression is evaluated with the data frame as the environment, so any column reference works. Note that this filters the input — the returned data frame only contains rows that pass the filter. If you need norms from controls but composites for everyone, run the function on the controls first to derive group means/SDs, then apply them externally to the full sample.
+
+## Summing components without standardization
+
+Some tests have multiple components that should be combined as raw sums, not z-scores — for example, Trail Making Test A and B times that get summed into a "trails total" measure. `sum_cognitive_test_components()` handles this:
+
+```{r, eval = FALSE}
+sum_cognitive_test_components(
+  tests,
+  component_cols = c("trails_a", "trails_b"),
+  result_col     = "trails_total",
+  method         = "sum"
+)
+```
+
+`method = "mean"` is also supported. Both default to `na.rm = TRUE`, so a participant with one missing component still gets a value computed from what's present — set `na.rm = FALSE` if you'd rather propagate `NA` for any missingness.

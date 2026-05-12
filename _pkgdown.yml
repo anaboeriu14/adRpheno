@@ -1,0 +1,123 @@
+url: https://anaboeriu14.github.io/adRpheno/
+
+template:
+  bootstrap: 5
+  bslib:
+    # ---- Brand palette ----
+    primary: "#1F6F73"
+    secondary: "#5A9B9E"
+
+    # ---- Typography ----
+    base_font: {google: "Inter"}
+    heading_font: {google: "Inter"}
+    code_font: {google: "JetBrains Mono"}
+
+    # ---- Body ----
+    bg: "#FFFFFF"
+    fg: "#1F1F2E"
+
+    # ---- Code styling ----
+    code-color: "#1F6F73"
+    code-bg: "#F0F7F7"
+
+    # ---- Headings ----
+    headings-font-weight: 600
+    headings-color: "#1F1F2E"
+
+    # ---- Links & borders ----
+    link-decoration: "none"
+    border-radius: "0.375rem"
+    border-color: "#DDE9EA"
+
+home:
+  title: Tools for Alzheimer's Disease Endophenotype Analysis
+  description: >
+    Process and analyze Alzheimer's Disease research data: APOE genotype
+    validation, RxNorm-based medication processing with caching, cognitive
+    composite scoring, clinical metrics, and biomarker standardization.
+
+development:
+  mode: auto
+
+navbar:
+  structure:
+    left:  [articles, reference, news]
+    right: [search, github]
+  components:
+    articles:
+      text: Articles
+      menu:
+      - text: "Medications"
+      - text: RxNorm & ATC lookup
+        href: articles/medications-rxnorm-atc.html
+      - text: Categorize & pivot to wide format
+        href: articles/medications-categorize-pivot.html
+      - text: -------
+      - text: "Genetics & cognition"
+      - text: APOE genotype workflow
+        href: articles/apoe-genetics.html
+      - text: Cognitive composites
+        href: articles/cognitive-composites.html
+    github:
+      icon: fab fa-github
+      href: https://github.com/anaboeriu14/adRpheno
+      aria-label: GitHub
+
+articles:
+- title: Medication processing
+  desc: >
+    End-to-end workflows for looking up RxCUI codes, attaching WHO ATC
+    classifications, categorizing drugs by therapeutic class, and reshaping
+    long medication data to wide format. These articles use the live RxNav
+    API, so they are website-only (excluded from R CMD check).
+  contents:
+  - articles/medications-rxnorm-atc
+  - articles/medications-categorize-pivot
+
+- title: Genetics & cognition
+  desc: >
+    Validate APOE genotypes against e4 carrier flags and SNP data, classify
+    risk groups, and build demographic-adjusted cognitive composites.
+  contents:
+  - apoe-genetics
+  - cognitive-composites
+
+reference:
+- title: Medication processing
+  desc: >
+    Look up RxCUI codes, attach WHO ATC classifications, categorize drugs
+    by therapeutic class, and reshape long medication data to wide format.
+    All API calls are cached to disk.
+  contents:
+  - get_single_rxcui
+  - add_rxcuis
+  - add_atc_classification
+  - categorize_drugs
+  - pivot_medication_data_wide
+
+- title: APOE genetics
+  desc: >
+    Validate APOE genotypes against e4 carrier flags and rs7412/rs429358
+    SNP data, and classify genotypes into risk groups.
+  contents:
+  - validate_apoe_e4_status
+  - match_snp_genotype
+  - classify_apoe_risk_groups
+
+- title: Clinical calculations
+  desc: >
+    BMI with obesity classification, blood pressure metrics (mean arterial
+    pressure, pulse pressure), and CKD-EPI 2021 eGFR.
+  contents:
+  - calculate_bmi_obesity
+  - calculate_bp_metrics
+  - calculate_egfr
+
+- title: Cognitive composites & standardization
+  desc: >
+    Compute z-scores (optionally group-wise) and build demographic-adjusted
+    cognitive composite scores from groups of test variables.
+  contents:
+  - compute_zscores
+  - create_adjusted_composites
+  - sum_cognitive_test_components

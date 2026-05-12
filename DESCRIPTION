@@ -13,7 +13,7 @@ Description: Tools for standardizing and analyzing Alzheimer's Disease (AD)
     processing through the National Library of Medicine RxNorm and
     RxClass APIs with on-disk caching.
 License: MIT + file LICENSE
-URL: https://github.com/anaboeriu14/adRpheno
+URL: https://github.com/anaboeriu14/adRpheno, https://anaboeriu14.github.io/adRpheno/
 BugReports: https://github.com/anaboeriu14/adRpheno/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -30,7 +30,11 @@ Imports:
     utils
 Suggests: 
     testthat (>= 3.0.0),
-    covr
+    covr,
+    knitr,
+    rmarkdown
 Remotes: 
     github::anaboeriu14/adRutils
 Config/testthat/edition: 3
+Config/Needs/website: rmarkdown
+VignetteBuilder: knitr
