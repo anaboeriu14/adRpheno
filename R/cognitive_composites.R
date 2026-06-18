@@ -64,33 +64,40 @@ create_adjusted_composites <- function(dataf, test_groups, grouping_vars,
   result_df
 }
 
-
-#' Calculate Total Score from Multiple Test Components
-#'
-#' Combines multiple test component scores using sum or mean.
+#' Combines multiple test component scores into one column using either a
+#' sum or a mean.
 #'
 #' @param dataf A data frame containing test component columns
 #' @param component_cols Character vector of column names to combine
-#' @param result_col Name for new total score column (default: `"total_score"`)
+#' @param result_col Name for new score column (default: `"total_score"`)
 #' @param method Combination method: `"sum"` or `"mean"` (default: `"sum"`)
 #' @param na.rm Remove `NA` values when combining (default: `TRUE`)
 #' @param verbose Show informative messages (default: `TRUE`)
 #'
-#' @return Data frame with added total score column
+#' @return Data frame with the added combined-score column
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' result <- sum_cognitive_test_components(
+#' # Sum of two Trail Making Test times
+#' result <- combine_cognitive_test_components(
 #'   dataf          = my_data,
 #'   component_cols = c("trails_a_time", "trails_b_time"),
 #'   result_col     = "trails_total"
 #' )
+#'
+#' # Mean of several memory tests
+#' result <- combine_cognitive_test_components(
+#'   dataf          = my_data,
+#'   component_cols = c("recall_1", "recall_2", "recognition"),
+#'   result_col     = "memory_mean",
+#'   method         = "mean"
+#' )
 #' }
-sum_cognitive_test_components <- function(dataf, component_cols,
-                                          result_col = "total_score",
-                                          method = "sum", na.rm = TRUE,
-                                          verbose = TRUE) {
+combine_cognitive_test_components <- function(dataf, component_cols,
+                                              result_col = "total_score",
+                                              method = "sum", na.rm = TRUE,
+                                              verbose = TRUE) {
 
   adRutils::validate_args(
     data            = dataf,
@@ -131,6 +138,8 @@ sum_cognitive_test_components <- function(dataf, component_cols,
 }
 
 
+
+
 # ---- internal helpers ------------------------------------------------------
 
 #' Validate test groups structure and column existence
@@ -165,13 +174,11 @@ sum_cognitive_test_components <- function(dataf, component_cols,
   dataf
 }
 
-#' Compute group-wise z-scores for each test group
-#'
-#' Note: this is intentionally separate from the public [compute_zscores()].
-#' The output naming `zscore_{var}_{group_name}` is required by
-#' [create_adjusted_composites()] to disambiguate when the same test column
-#' appears in multiple test groups; `compute_zscores()` uses a single-prefix
-#' scheme that would collide in that case.
+#' Note: this is intentionally separate from the public `compute_zscores()`
+#' (now in adRutils). The output naming `zscore_{var}_{group_name}` is
+#' required by `create_adjusted_composites()` to disambiguate when the same
+#' test column appears in multiple test groups; `compute_zscores()` uses a
+#' single-prefix scheme that would collide in that case.
 #' @keywords internal
 #' @noRd
 .compute_cognitive_zscores <- function(dataf, test_groups, grouping_vars) {

@@ -1,6 +1,6 @@
 Package: adRpheno
 Title: Tools for Alzheimer's Disease Endophenotype Analysis
-Version: 2.0.0
+Version: 2.1.0
 Authors@R:
     person("Ana", "Boeriu",
            email = "ana.boeriu@ucsf.edu",
@@ -19,7 +19,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: 
-    adRutils (>= 2.0.0),
+    adRutils (>= 2.1.0),
     cli,
     dplyr,
     httr,

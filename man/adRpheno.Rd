@@ -15,6 +15,7 @@ processing with caching, cognitive composite scoring, clinical metrics
 Useful links:
 \itemize{
   \item \url{https://github.com/anaboeriu14/adRpheno}
+  \item \url{https://anaboeriu14.github.io/adRpheno/}
   \item Report bugs at \url{https://github.com/anaboeriu14/adRpheno/issues}
 }
 

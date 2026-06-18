@@ -1,42 +1,42 @@
-# ---- sum_cognitive_test_components -----------------------------------------
+# ---- combine_cognitive_test_components -----------------------------------------
 
-test_that("sum_cognitive_test_components defaults to row sums", {
+test_that("combine_cognitive_test_components defaults to row sums", {
   df <- data.frame(a = c(1, 2, 3), b = c(4, 5, 6))
-  result <- sum_cognitive_test_components(df, c("a", "b"),
+  result <- combine_cognitive_test_components(df, c("a", "b"),
                                           result_col = "total",
                                           verbose = FALSE)
   expect_equal(result$total, c(5, 7, 9))
 })
 
-test_that("sum_cognitive_test_components computes row means when method='mean'", {
+test_that("combine_cognitive_test_components computes row means when method='mean'", {
   df <- data.frame(a = c(1, 2, 3), b = c(3, 4, 5))
-  result <- sum_cognitive_test_components(df, c("a", "b"),
+  result <- combine_cognitive_test_components(df, c("a", "b"),
                                           result_col = "avg",
                                           method = "mean",
                                           verbose = FALSE)
   expect_equal(result$avg, c(2, 3, 4))
 })
 
-test_that("sum_cognitive_test_components handles NAs based on na.rm", {
+test_that("combine_cognitive_test_components handles NAs based on na.rm", {
   df <- data.frame(a = c(1, NA, 3), b = c(4, 5, NA))
 
   # na.rm = TRUE (default): missing values treated as zero in sum
-  r_keep <- sum_cognitive_test_components(df, c("a", "b"),
+  r_keep <- combine_cognitive_test_components(df, c("a", "b"),
                                           result_col = "total",
                                           na.rm = TRUE, verbose = FALSE)
   expect_equal(r_keep$total, c(5, 5, 3))
 
   # na.rm = FALSE: any NA propagates
-  r_drop <- sum_cognitive_test_components(df, c("a", "b"),
+  r_drop <- combine_cognitive_test_components(df, c("a", "b"),
                                           result_col = "total",
                                           na.rm = FALSE, verbose = FALSE)
   expect_equal(r_drop$total, c(5, NA, NA))
 })
 
-test_that("sum_cognitive_test_components rejects invalid method", {
+test_that("combine_cognitive_test_components rejects invalid method", {
   df <- data.frame(a = 1, b = 2)
   expect_error(
-    sum_cognitive_test_components(df, c("a", "b"), method = "median",
+    combine_cognitive_test_components(df, c("a", "b"), method = "median",
                                   verbose = FALSE)
   )
 })
