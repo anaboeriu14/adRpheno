@@ -116,8 +116,8 @@ reference:
 - title: Cognitive composites & standardization
   desc: >
      Build demographic-adjusted cognitive composite scores from groups of
-    test variables. For general-purpose z-score standardization, see
-    adRutils::compute_zscores().
+     test variables. For general-purpose z-score standardization, see
+     adRutils::compute_zscores().
   contents:
   - create_adjusted_composites
   - combine_cognitive_test_components
