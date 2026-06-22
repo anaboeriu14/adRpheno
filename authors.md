@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/anaboeriu14/adRpheno/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/anaboeriu14/adRpheno/blob/v2.1.0/DESCRIPTION)
 
 Boeriu A (2026). *adRpheno: Tools for Alzheimer's Disease Endophenotype
 Analysis*. R package version 2.1.0,
