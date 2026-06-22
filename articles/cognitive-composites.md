@@ -19,13 +19,13 @@ and so on. Two common analytic needs:
 
 `adRpheno` provides three functions for this:
 
-- [`compute_zscores()`](https://anaboeriu14.github.io/adRpheno/reference/compute_zscores.md)
-  — standardize one or more variables, with or without grouping.
+- `compute_zscores()` — standardize one or more variables, with or
+  without grouping.
 - [`create_adjusted_composites()`](https://anaboeriu14.github.io/adRpheno/reference/create_adjusted_composites.md)
   — z-score and combine into per-domain composites in one step, with
   demographic adjustment built in.
-- [`sum_cognitive_test_components()`](https://anaboeriu14.github.io/adRpheno/reference/sum_cognitive_test_components.md)
-  — sum or mean across raw test components (no standardization).
+- `sum_cognitive_test_components()` — sum or mean across raw test
+  components (no standardization).
 
 ## Z-scores, simple and grouped
 
@@ -108,9 +108,8 @@ participants.
 ### Why z-score columns include the group name
 
 You might notice the z-score column naming differs from
-[`compute_zscores()`](https://anaboeriu14.github.io/adRpheno/reference/compute_zscores.md).
-The latter produces `zscore_LM1`; this function produces
-`zscore_LM1_memory`. The reason:
+`compute_zscores()`. The latter produces `zscore_LM1`; this function
+produces `zscore_LM1_memory`. The reason:
 
 > Nothing prevents the same test from appearing in two composite groups.
 > If `LM1` were in both `memory` and a hypothetical `verbal` group,
@@ -148,8 +147,7 @@ them externally to the full sample.
 
 Some tests have multiple components that should be combined as raw sums,
 not z-scores — for example, Trail Making Test A and B times that get
-summed into a “trails total” measure.
-[`sum_cognitive_test_components()`](https://anaboeriu14.github.io/adRpheno/reference/sum_cognitive_test_components.md)
+summed into a “trails total” measure. `sum_cognitive_test_components()`
 handles this:
 
 ``` r

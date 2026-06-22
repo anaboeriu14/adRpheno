@@ -43,12 +43,12 @@ pressure, pulse pressure), and CKD-EPI 2021 eGFR.
 
 ## Cognitive composites & standardization
 
-Compute z-scores (optionally group-wise) and build demographic-adjusted
-cognitive composite scores from groups of test variables.
+Build demographic-adjusted cognitive composite scores from groups of
+test variables. For general-purpose z-score standardization, see
+adRutils::compute_zscores().
 
-- [`compute_zscores()`](https://anaboeriu14.github.io/adRpheno/reference/compute_zscores.md)
-  : Standardize Numeric Variables
 - [`create_adjusted_composites()`](https://anaboeriu14.github.io/adRpheno/reference/create_adjusted_composites.md)
   : Compute Adjusted Composite Scores
-- [`sum_cognitive_test_components()`](https://anaboeriu14.github.io/adRpheno/reference/sum_cognitive_test_components.md)
-  : Calculate Total Score from Multiple Test Components
+- [`combine_cognitive_test_components()`](https://anaboeriu14.github.io/adRpheno/reference/combine_cognitive_test_components.md)
+  : Combines multiple test component scores into one column using either
+  a sum or a mean.

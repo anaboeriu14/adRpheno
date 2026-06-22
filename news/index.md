@@ -1,5 +1,33 @@
 # Changelog
 
+## adRpheno 2.1.0
+
+### Breaking Changes
+
+- `sum_cognitive_test_components()` is renamed to
+  [`combine_cognitive_test_components()`](https://anaboeriu14.github.io/adRpheno/reference/combine_cognitive_test_components.md).
+  The new method-neutral verb pairs naturally with
+  `method = c("sum", "mean")`, where the old name was contradictory for
+  `method = "mean"`.
+
+- `compute_zscores()` has moved to the adRutils package. adRpheno
+  retains a deprecated shim that forwards to
+  [`adRutils::compute_zscores()`](https://anaboeriu14.github.io/adRutils/reference/compute_zscores.html),
+  call
+  [`adRutils::compute_zscores()`](https://anaboeriu14.github.io/adRutils/reference/compute_zscores.html)
+  directly going forward.
+
+### Bug Fixes
+
+- None
+
+### Dependencies
+
+- Requires adRutils (\>= 2.1.0), the version that introduces
+  `compute_zscores()`.
+
+------------------------------------------------------------------------
+
 ## adRpheno 2.0.0
 
 Major cleanup release. The package was refactored end-to-end for
