@@ -47,7 +47,7 @@
 <div class="section level3">
 <h3 id="breaking-changes-2-1-0">Breaking Changes<a class="anchor" aria-label="anchor" href="#breaking-changes-2-1-0"></a></h3>
 <ul><li><p><code>sum_cognitive_test_components()</code> is renamed to <code><a href="../reference/combine_cognitive_test_components.html">combine_cognitive_test_components()</a></code>. The new method-neutral verb pairs naturally with <code>method = c("sum", "mean")</code>, where the old name was contradictory for <code>method = "mean"</code>.</p></li>
-<li><p><code>compute_zscores()</code> has moved to the adRutils package. adRpheno retains a deprecated shim that forwards to <code><a href="https://anaboeriu14.github.io/adRutils/reference/compute_zscores.html" class="external-link">adRutils::compute_zscores()</a></code>, call <code><a href="https://anaboeriu14.github.io/adRutils/reference/compute_zscores.html" class="external-link">adRutils::compute_zscores()</a></code> directly going forward.</p></li>
+<li><p><code>compute_zscores()</code> has moved to the adRutils package. It has been removed from adRpheno with no deprecation, so existing calls to <code>adRpheno::compute_zscores()</code> (or to <code>compute_zscores()</code> with only adRpheno attached) will break. Update any code to call <code><a href="https://anaboeriu14.github.io/adRutils/reference/compute_zscores.html" class="external-link">adRutils::compute_zscores()</a></code> directly; the signature and behavior are unchanged.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-2-1-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-2-1-0"></a></h3>
