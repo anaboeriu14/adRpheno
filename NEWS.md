@@ -8,10 +8,12 @@
     naturally with `method = c("sum", "mean")`, where the old name was
     contradictory for `method = "mean"`. 
     
--   `compute_zscores()` has moved to the adRutils package. adRpheno retains a
-    deprecated shim that forwards to `adRutils::compute_zscores()`, 
-    call `adRutils::compute_zscores()` directly going forward.
-
+-   `compute_zscores()` has moved to the adRutils package. It has been removed
+    from adRpheno with no deprecation, so existing calls to
+    `adRpheno::compute_zscores()` (or to `compute_zscores()` with only adRpheno
+    attached) will break. Update any code to call `adRutils::compute_zscores()`
+    directly; the signature and behavior are unchanged.
+    
 ## Bug Fixes
 
 -   None
