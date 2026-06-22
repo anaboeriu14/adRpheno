@@ -1,5 +1,13 @@
 # Articles
 
+### Upgrading
+
+Breaking changes and the code edits needed to move from the 1.x series
+to 2.x.
+
+- [Migrating from 1.x to
+  2.x](https://anaboeriu14.github.io/adRpheno/articles/migrating-to-2x.md):
+
 ### Medication processing
 
 End-to-end workflows for looking up RxCUI codes, attaching WHO ATC
